@@ -14,6 +14,7 @@ companion object {
         private const val TAG = "MainViewModel"
     }
     private val timerLogic = TimerLogic(viewModelScope)
+    private val currentTimer = timerLogic.currentTime
 
     fun startTimer(){
         Log.i(TAG,"receiver success start")
@@ -24,4 +25,6 @@ companion object {
         Log.i(TAG,"receiver success stop")
         timerLogic.stopTimer()
     }
+
+
 }

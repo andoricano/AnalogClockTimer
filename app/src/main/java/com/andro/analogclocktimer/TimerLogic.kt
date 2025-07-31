@@ -1,5 +1,6 @@
 package com.andro.analogclocktimer
 
+import android.util.Log
 import com.andro.analogclocktimer.data.Clock
 import com.andro.analogclocktimer.data.getTimeNow
 import com.andro.analogclocktimer.data.plusOneSecond
@@ -26,7 +27,7 @@ class TimerLogic (
 
     //측정 중 현재 시간
     private val _currentTime = MutableStateFlow( getTimeNow())
-    private val currentTime : StateFlow<Clock>
+    val currentTime : StateFlow<Clock>
         get() = _currentTime
     private var startTime = Clock(h = 0, m = 0, s = 0)
     private var endTime = Clock(h = 0, m = 0, s = 0)
@@ -48,6 +49,7 @@ class TimerLogic (
                 _currentTime.update{
                     currentTime.value.plusOneSecond()
                 }
+                Log.i(TAG, "current Time : ${currentTime.value}")
             }
         }
     }
@@ -55,6 +57,7 @@ class TimerLogic (
     //타이머 정지
     fun stopTimer(){
         timerJob?.cancel()
+        Log.i(TAG, "current Time : ${currentTime.value}")
     }
 
     //user out

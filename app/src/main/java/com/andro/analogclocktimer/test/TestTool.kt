@@ -18,7 +18,7 @@ class TestTool @Inject constructor(
     init{
         Log.i(TAG, "$TAG Start!")
     }
-    val mainViewModel : MainViewModel? = null
+    var mainViewModel : MainViewModel? = null
 
     fun getTest(tag : String){
         Log.i(TAG, "getTest : $tag")

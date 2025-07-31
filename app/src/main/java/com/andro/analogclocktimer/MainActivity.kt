@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.andro.analogclocktimer.App.Companion.app
 import com.andro.analogclocktimer.ui.theme.AnalogClockTimerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,9 +21,14 @@ class MainActivity : ComponentActivity() {
             AnalogClockTimerTheme {
             }
         }
+        initTestLogic()
     }
     private fun initLifecycleLogic(){
         val scope = lifecycleScope
 
+    }
+
+    private fun initTestLogic(){
+        app.testTool.mainViewModel = vm
     }
 }
