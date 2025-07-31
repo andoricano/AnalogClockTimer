@@ -59,6 +59,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("androidx.navigation:navigation-compose:2.5.3")
     // Hilt
     implementation("com.google.dagger:hilt-android:2.56")
     kapt("com.google.dagger:hilt-android-compiler:2.56")
