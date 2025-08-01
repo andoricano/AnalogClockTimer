@@ -34,6 +34,10 @@ class TimerLogic (
 
     private var timerJob : Job? = null
 
+    fun testUpdateClockTimer(c : Clock){
+        _currentTime.update { c }
+    }
+
     fun setTimeSystem(start : Clock, end : Clock){
         startTime = start
         endTime = end

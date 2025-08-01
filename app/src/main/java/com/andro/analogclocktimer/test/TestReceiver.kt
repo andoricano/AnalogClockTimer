@@ -13,11 +13,13 @@ import javax.inject.Inject
 class TestReceiver : BroadcastReceiver() {
     companion object {
         // adb cmd
+        //ex)./start-adb.sh cmd
         private const val TAG = "TestReceiver"
         const val ACTION_COMMAND = "com.andro.analogclocktimer.ACTION_COMMAND"
         private const val EXTRA_COMMAND = "extra_command"
         private const val START_TIMER = "start"
         private const val STOP_TIMER = "stop"
+        private const val SET_CLOCK_TIMER = "setClockTime"
 
         fun sizeCommand(n: Int): String = "size$n"
         fun locationCommand(n: Int): String = "location$n"
@@ -27,10 +29,10 @@ class TestReceiver : BroadcastReceiver() {
     private val testTool = app.testTool
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.w(TAG, "Unknown command received: $intent")
         if (intent.action != ACTION_COMMAND) return
 
         val command = intent.getStringExtra(EXTRA_COMMAND) ?: return
+        Log.d("TestReceiver", "Received command: '$command'")
 
         when (command) {
             START_TIMER -> {
@@ -80,6 +82,18 @@ class TestReceiver : BroadcastReceiver() {
                             Log.d(TAG, "Set timer from Clock($hh1,$mm1,$ss1) to Clock($hh2,$mm2,$ss2)")
 
                             testTool.mainViewModel?.setTimer(Clock(hh1, mm1, ss1), Clock(hh2, mm2, ss2))
+                        }
+                    }
+                    command.startsWith(SET_CLOCK_TIMER) -> {
+                        val value = command.split(",")
+                        if (value[1].length == 6) {
+                            val hh1 = value[1].substring(0, 2).toIntOrNull() ?:0
+                            val mm1 = value[1].substring(2, 4).toIntOrNull() ?:0
+                            val ss1 = value[1].substring(4, 6).toIntOrNull() ?:0
+
+                            Log.d(TAG, "Set Click time from Clock($hh1,$mm1,$ss1)")
+
+                            testTool.mainViewModel?.setCurrentTime(Clock(hh1, mm1, ss1))
                         }
                     }
 

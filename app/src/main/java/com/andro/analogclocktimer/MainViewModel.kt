@@ -44,5 +44,8 @@ companion object {
 
     }
 
+    fun setCurrentTime(c : Clock){
+        timerLogic.testUpdateClockTimer(c)
+    }
 
 }

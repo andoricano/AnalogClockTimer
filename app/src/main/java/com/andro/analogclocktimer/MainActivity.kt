@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    val vm : MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +28,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initTestLogic(){
-        app.testTool.mainViewModel = vm
+
     }
 }
