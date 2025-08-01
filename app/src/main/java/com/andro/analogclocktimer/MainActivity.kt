@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
 import com.andro.analogclocktimer.App.Companion.app
 import com.andro.analogclocktimer.ui.theme.AnalogClockTimerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,8 +19,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AnalogClockTimerTheme {
-            }
+            NavGraph(rememberNavController())
         }
         initTestLogic()
     }
