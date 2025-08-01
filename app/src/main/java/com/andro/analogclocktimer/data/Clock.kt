@@ -1,16 +1,20 @@
 package com.andro.analogclocktimer.data
 
+import android.util.Log
+
 data class Clock(val h: Int, val m: Int, val s: Int)
 
 fun getTimeNow(): Clock {
     val cal = java.util.Calendar.getInstance().apply {
         timeInMillis = System.currentTimeMillis()
     }
-    return Clock(
+    val clock = Clock(
         h = cal.get(java.util.Calendar.HOUR_OF_DAY),
         m = cal.get(java.util.Calendar.MINUTE),
         s = cal.get(java.util.Calendar.SECOND)
     )
+    Log.i("getTimeNow", "this time is : $clock®")
+    return clock
 }
 
 /**return new instance*/

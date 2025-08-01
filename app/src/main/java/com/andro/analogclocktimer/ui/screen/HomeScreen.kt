@@ -1,15 +1,34 @@
 package com.andro.analogclocktimer.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.andro.analogclocktimer.navigateToTheme
+import com.andro.analogclocktimer.ui.canvas.clock.ClockCanvas
 
 @Composable
 fun HomeScreen(nc: NavController) {
-    Button(onClick = { nc.navigateToTheme() }) {
-        Text("Go to Theme")
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
 
+        Box(modifier = Modifier.weight(0.75f)) {
+            ClockCanvas()
+        }
+        Box(modifier = Modifier.weight(0.25f)) {
+            Button(onClick = { nc.navigateToTheme() }) {
+                Text("Go to Theme")
+
+            }
+        }
     }
 }
