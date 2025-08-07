@@ -69,4 +69,5 @@ dependencies {
 
     // WorkManager (필요하면)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("com.github.yalantis:ucrop:2.2.8")
 }
