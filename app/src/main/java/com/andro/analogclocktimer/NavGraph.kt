@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.andro.analogclocktimer.ui.screen.HomeScreen
-import com.andro.analogclocktimer.ui.screen.ThemeScreen
+import com.andro.analogclocktimer.ui.screen.theme.ThemeScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -15,9 +15,7 @@ fun NavGraph(navController: NavHostController) {
         composable(NavRoutes.Theme) { ThemeScreen(navController) }
     }
 }
-fun NavController.navigateToHomePopBack() {
-    popBackStack()
-}
+
 fun NavController.navigateToTheme() {
     navigate(NavRoutes.Theme)
 }
