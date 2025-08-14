@@ -21,6 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.andro.analogclocktimer.MainActivity
+import com.andro.analogclocktimer.ui.composable.BasicButton
 
 
 @Composable
@@ -53,24 +54,30 @@ fun ThemeScreenBtm(
     modifier: Modifier
 ){
     val activity = LocalContext.current as MainActivity
-
+    val rowList = listOf(
+        Pair(ThemeMenu("배경 선택",null){ activity.checkAndRequestPermission() },
+        ThemeMenu("폰트 선택",null){}),
+        Pair(ThemeMenu("전자 시계",null){},
+        ThemeMenu("테마 저장",null){activity.vm.changeThemeBg()}),
+    )
     Column(
         modifier = Modifier.fillMaxWidth().then(modifier),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row {
-            Button({
-                activity.checkAndRequestPermission()
-            }){
-                Text("시계 배경")
-            }
-
-            Button({
-                activity.vm.changeThemeBg()
-            }){
-                Text("배경 저장")
+        rowList.forEach {
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ){
+                BasicButton(it.first.text, width = 140.dp, icon = it.first.icon ){it.first.onClick()}
+                BasicButton(it.second.text, width = 140.dp, icon = it.second.icon ){it.second.onClick()}
             }
         }
     }
 }
+
+private data class ThemeMenu(
+    val text : String,
+    val icon: @Composable (() -> Unit)? = null,
+    val onClick : () -> Unit
+)
