@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.andro.analogclocktimer.data.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,6 +18,7 @@ companion object {
     }
     private val timerLogic = TimerLogic(viewModelScope)
     val currentTimer = timerLogic.currentTime
+    val menuState = MutableStateFlow(true)
 
     fun startTimer(){
         Log.i(TAG,"receiver success start")

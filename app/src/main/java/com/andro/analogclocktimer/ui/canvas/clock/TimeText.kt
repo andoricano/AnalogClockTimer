@@ -34,7 +34,7 @@ fun ClockNumbers(modifier: Modifier = Modifier) {
             Text(
                 text = number.toString(),
                 modifier = Modifier
-                    .offset { IntOffset(x.roundToInt()+90, y.roundToInt() +420) }
+                    .offset { IntOffset(x.roundToInt()+90, y.roundToInt() + 90) }
                     .size(24.dp),
                 color = Color.White,
                 fontSize = 18.sp,
