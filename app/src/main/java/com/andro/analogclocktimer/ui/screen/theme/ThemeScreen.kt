@@ -22,6 +22,7 @@ fun ThemeScreen(nc: NavController) {
             modifier = Modifier.weight(0.7f)
         )
         ThemeScreenBtm(
+            nc,
             modifier = Modifier.weight(0.2f)
         )
     }

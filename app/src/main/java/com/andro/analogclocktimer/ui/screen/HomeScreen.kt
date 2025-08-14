@@ -58,7 +58,6 @@ fun HomeScreen(nc: NavController,vm : MainViewModel = hiltViewModel()) {
             BoxWithConstraints(
                 modifier = Modifier.size(side)
                     .align(Alignment.Center)
-                    .background(Color.Red)
             ) {
                 ClockCanvas()
             }

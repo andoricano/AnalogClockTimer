@@ -1,27 +1,19 @@
 package com.andro.analogclocktimer.ui.screen.theme
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.andro.analogclocktimer.MainActivity
 import com.andro.analogclocktimer.ui.canvas.clock.ClockCanvas
 import com.andro.analogclocktimer.ui.composable.BasicButton
@@ -35,8 +27,7 @@ fun ThemeScreenMid(
     val bitmap by vm.renderingBitmap.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxWidth().then(modifier)
-            .background(Color.Red),
+        modifier = Modifier.fillMaxWidth().then(modifier),
         Arrangement.Center
     ) {
 
@@ -46,6 +37,7 @@ fun ThemeScreenMid(
 
 @Composable
 fun ThemeScreenBtm(
+    nc: NavController,
     modifier: Modifier
 ){
     val activity = LocalContext.current as MainActivity
@@ -53,7 +45,10 @@ fun ThemeScreenBtm(
         Pair(ThemeMenu("배경 선택",null){ activity.checkAndRequestPermission() },
         ThemeMenu("폰트 선택",null){}),
         Pair(ThemeMenu("전자 시계",null){},
-        ThemeMenu("테마 저장",null){activity.vm.changeThemeBg()}),
+        ThemeMenu("테마 저장",null){
+            activity.vm.changeThemeBg()
+            nc.popBackStack()
+        }),
     )
     Column(
         modifier = Modifier.fillMaxWidth().then(modifier),
