@@ -60,14 +60,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.navigation:navigation-compose:2.5.3")
-    // Hilt
     implementation("com.google.dagger:hilt-android:2.56")
     kapt("com.google.dagger:hilt-android-compiler:2.56")
-
-    // Hilt Jetpack integration
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-
-    // WorkManager (필요하면)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.github.yalantis:ucrop:2.2.8")
 }

@@ -8,13 +8,18 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.andro.analogclocktimer.App.Companion.app
@@ -30,10 +35,18 @@ class MainActivity : ComponentActivity() {
         private const val REQUEST_GALLERY = 2001
         private const val TAG = "AnalogClockMainActivity"
     }
+    val vm: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.statusBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
         setContent {
             NavGraph(rememberNavController())
         }
@@ -89,7 +102,6 @@ class MainActivity : ComponentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-
         when (requestCode) {
             REQUEST_GALLERY -> {
                 if (resultCode == RESULT_OK) {
@@ -104,7 +116,7 @@ class MainActivity : ComponentActivity() {
                     val resultUri = data?.let { UCrop.getOutput(it) }
                     if (resultUri != null) {
                         Log.d(TAG, "크롭된 이미지 URI: $resultUri")
-                        // 크롭된 이미지 처리 로직 추가
+                        vm.loadBitmapFromUri(this,resultUri)
                     }
                 } else if (resultCode == UCrop.RESULT_ERROR) {
                     val cropError = data?.let { UCrop.getError(it) }
