@@ -34,6 +34,14 @@ class TimerLogic (
 
     private var timerJob : Job? = null
 
+    init{
+        scope.launch {
+            while(true){
+                delay(1000)
+                _currentTime.update{getTimeNow()}
+            }
+        }
+    }
     fun testUpdateClockTimer(c : Clock){
         _currentTime.update { c }
     }

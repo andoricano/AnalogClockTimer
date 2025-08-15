@@ -13,7 +13,6 @@ fun getTimeNow(): Clock {
         m = cal.get(java.util.Calendar.MINUTE),
         s = cal.get(java.util.Calendar.SECOND)
     )
-    Log.i("getTimeNow", "this time is : $clock®")
     return clock
 }
 
