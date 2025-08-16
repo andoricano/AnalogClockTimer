@@ -12,8 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.andro.analogclocktimer.MainActivity
 import com.andro.analogclocktimer.ui.canvas.clock.ClockCanvas
 import com.andro.analogclocktimer.ui.composable.BasicButton

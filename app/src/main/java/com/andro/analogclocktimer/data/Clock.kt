@@ -1,7 +1,5 @@
 package com.andro.analogclocktimer.data
 
-import android.util.Log
-
 data class Clock(val h: Int, val m: Int, val s: Int)
 
 fun getTimeNow(): Clock {
