@@ -40,8 +40,6 @@ fun ThemeScreenBtm(
 ){
     val activity = LocalContext.current as MainActivity
     val rowList = listOf(
-        Pair(ThemeMenu("배경 선택",null){ activity.checkAndRequestPermission() },
-        ThemeMenu("폰트 선택",null){}),
         Pair(ThemeMenu("전자 시계",null){},
         ThemeMenu("테마 저장",null){
             activity.vm.changeThemeBg()
