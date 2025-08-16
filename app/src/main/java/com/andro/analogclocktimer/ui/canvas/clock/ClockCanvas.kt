@@ -1,5 +1,7 @@
 package com.andro.analogclocktimer.ui.canvas.clock
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,20 +19,18 @@ import com.andro.analogclocktimer.data.Clock
 @Composable
 fun ClockCanvas(vm: MainViewModel = hiltViewModel()) {
     val currentTime by vm.currentTimer.collectAsState(initial = Clock(0, 0, 0))
+    Log.i("currentTime", "currentTime : $currentTime")
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
     ) {
         val size = min(maxWidth, maxHeight)
 
-        Box(
-            modifier = Modifier
-                .size(size)
-        ) {
+        Box(modifier = Modifier.size(size)) {
             ClockBg()
             HourHand(currentTime)
             MinuteHand(currentTime)
-            TimeText(currentTime,this)
+            SecondHand(currentTime)
             ClockNumbers(size)
         }
     }

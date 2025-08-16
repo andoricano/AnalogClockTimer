@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import com.andro.analogclocktimer.data.Clock
+import com.andro.analogclocktimer.ui.theme.SecondNeedle
 
 
 @Composable
@@ -18,7 +19,7 @@ fun HourHand(clock: Clock) {
         val angle = ((clock.h % 12) + clock.m / 60f) * 30f - 90f
         val end = angleToOffset(angle, radius * 0.5f, center)
 
-        drawLine(Color.Black, center, end, strokeWidth = 8f, cap = StrokeCap.Round)
+        drawLine(Color.DarkGray, center, end, strokeWidth = 8f, cap = StrokeCap.Round)
     }
 }
 
@@ -30,9 +31,23 @@ fun MinuteHand(clock: Clock) {
         val angle = clock.m * 6f - 90f
         val end = angleToOffset(angle, radius * 0.7f, center)
 
-        drawLine(Color.DarkGray, center, end, strokeWidth = 5f, cap = StrokeCap.Round)
+        drawLine(Color.Black, center, end, strokeWidth = 5f, cap = StrokeCap.Round)
     }
 }
+
+
+@Composable
+fun SecondHand(clock: Clock) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val radius = size.minDimension / 2f
+        val angle = clock.s * 6f - 90f
+        val end = angleToOffset(angle, radius * 0.8f, center)
+
+        drawLine(SecondNeedle, center, end, strokeWidth = 4f, cap = StrokeCap.Round)
+    }
+}
+
 
 private fun angleToOffset(angle: Float, length: Float, center: Offset): Offset {
     val rad = Math.toRadians(angle.toDouble())

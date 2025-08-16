@@ -1,10 +1,14 @@
 package com.andro.analogclocktimer.ui.canvas.clock
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -19,6 +23,7 @@ import com.andro.analogclocktimer.MainActivity
 
 @Composable
 fun ClockBg() {
+    val strokeColor = if (isSystemInDarkTheme()) Color.White else  Color.Black
     val vm = (LocalContext.current as MainActivity).vm
 
     val bitmap by vm.renderingBitmap.collectAsState()
@@ -43,7 +48,7 @@ fun ClockBg() {
         }
 
         drawCircle(
-            color = Color.Black,
+            color = strokeColor,
             radius = radiusOuter,
             style = Stroke(width = 4.dp.toPx()),
             center = center

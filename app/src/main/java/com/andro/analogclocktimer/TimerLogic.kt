@@ -31,14 +31,14 @@ class TimerLogic (
         get() = _currentTime
     private var startTime = Clock(h = 0, m = 0, s = 0)
     private var endTime = Clock(h = 0, m = 0, s = 0)
-
+    private var timeStop = false
     private var timerJob : Job? = null
 
     init{
         scope.launch {
             while(true){
                 delay(1000)
-                _currentTime.update{getTimeNow()}
+                if(!timeStop) _currentTime.update{getTimeNow()}
             }
         }
     }
@@ -54,22 +54,24 @@ class TimerLogic (
 
     //타이머 시작
     fun startTimer(){
-        if(timerJob?.isActive == true) return
-        timerJob = scope.launch {
-            while(isActive){
-                delay(1000)
-                _currentTime.update{
-                    currentTime.value.plusOneSecond()
-                }
-                Log.i(TAG, "current Time : ${currentTime.value}")
-            }
-        }
+        timeStop = false
+//        if(timerJob?.isActive == true) return
+//        timerJob = scope.launch {
+//            while(isActive){
+//                delay(1000)
+//                _currentTime.update{
+//                    currentTime.value.plusOneSecond()
+//                }
+//                Log.i(TAG, "current Time : ${currentTime.value}")
+//            }
+//        }
     }
 
     //타이머 정지
     fun stopTimer(){
-        timerJob?.cancel()
-        Log.i(TAG, "current Time : ${currentTime.value}")
+        timeStop = true
+//        timerJob?.cancel()
+//        Log.i(TAG, "current Time : ${currentTime.value}")
     }
 
     //user out
