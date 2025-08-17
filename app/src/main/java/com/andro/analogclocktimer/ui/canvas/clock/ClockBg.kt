@@ -1,6 +1,7 @@
 package com.andro.analogclocktimer.ui.canvas.clock
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -30,8 +31,7 @@ fun ClockBg() {
     val imageBitmap = bitmap?.asImageBitmap()
     Canvas(modifier = Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
-        val paddingFactor = 0.9f
-        val radiusOuter = size.minDimension / 2f * paddingFactor
+        val radiusOuter = size.minDimension / 2f
 
         imageBitmap?.let {
             val left = center.x - radiusOuter
