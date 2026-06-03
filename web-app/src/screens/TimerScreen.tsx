@@ -1,25 +1,61 @@
-import { AnalogClock } from "../components/AnalogClock";
-import { useTimer } from "../hooks/useTimer";
+import { useState, useEffect } from 'react';
+import { useTimerContext } from '../context/TimerContext';
+import { useTimer } from '../hooks/useTimer';
+import { AnalogClock } from '../components/AnalogClock';
 
 export const TimerScreen = () => {
-    const { isRunning, start, stop, reset, angles } = useTimer(5);
+    const { clockMode } = useTimerContext();
+    const { isRunning, start, stop, reset, angles: timerAngles } = useTimer(90); // 기본 90분(1시간 30분) 세팅
+    const [currentClockAngles, setCurrentClockAngles] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+    useEffect(() => {
+        if (!clockMode) return;
+
+        const updateCurrentTimeAngles = () => {
+            const now = new Date();
+            const hours = now.getHours();
+            const mins = now.getMinutes();
+            const secs = now.getSeconds();
+
+            console.log(`현재 시각 -> ${hours}시 ${mins}분 ${secs}초`);
+
+            const secondsDegrees = secs * 6;
+            const minutesDegrees = mins * 6;
+            const hoursDegrees = (hours % 12) * 30 + mins * 0.5;
+
+            setCurrentClockAngles({
+                hours: hoursDegrees,
+                minutes: minutesDegrees,
+                seconds: secondsDegrees,
+            });
+        };
+
+        updateCurrentTimeAngles();
+        const intervalId = setInterval(updateCurrentTimeAngles, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [clockMode]);
+
+    const finalAngles = clockMode ? currentClockAngles : timerAngles;
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.title}>Analog Timer</h1>
+            <h1 style={styles.title}>
+                {clockMode ? 'Current Clock' : 'Analog Timer'}
+            </h1>
 
-            {/* 아날로그 시계 UI */}
-            <AnalogClock angles={angles} />
+            <AnalogClock angles={finalAngles} />
 
-            {/* 제어 버튼부 */}
-            <div style={styles.buttonContainer}>
-                {!isRunning ? (
-                    <button type="button" onClick={start} style={styles.button}>Start</button>
-                ) : (
-                    <button type="button" onClick={stop} style={styles.button}>Stop</button>
-                )}
-                <button type="button" onClick={reset} style={{ ...styles.button, ...styles.resetButton }}>Reset</button>
-            </div>
+            {!clockMode && (
+                <div style={styles.buttonContainer}>
+                    {!isRunning ? (
+                        <button type="button" onClick={start} style={styles.button}>Start</button>
+                    ) : (
+                        <button type="button" onClick={stop} style={styles.button}>Stop</button>
+                    )}
+                    <button type="button" onClick={reset} style={{ ...styles.button, ...styles.resetButton }}>Reset</button>
+                </div>
+            )}
         </div>
     );
 };

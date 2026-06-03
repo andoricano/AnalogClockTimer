@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export const useTimer = (initialMinutes: number = 5) => {
+export const useTimer = (initialMinutes: number = 90) => {
     const [timeLeft, setTimeLeft] = useState(initialMinutes * 60 * 1000);
     const [isRunning, setIsRunning] = useState(false);
 
@@ -43,13 +43,14 @@ export const useTimer = (initialMinutes: number = 5) => {
         setTimeLeft(initialMinutes * 60 * 1000);
     };
 
-    // 남은 시간을 초 단위(소수점 포함)로 변환하여 각도 계산
+    // 남은 시간으로 시, 분, 초 환산
     const totalSeconds = timeLeft / 1000;
-    const minutes = totalSeconds / 60;
+    const hours = totalSeconds / 3600;
+    const minutes = (totalSeconds % 3600) / 60;
     const seconds = totalSeconds % 60;
 
-    // 1분 = 360도 / 60분 = 6도
-    // 1초 = 360도 / 60초 = 6도
+    // 3개 바늘 각도 계산
+    const hoursDegrees = (hours % 12) * 30 + minutes * 0.5;
     const minutesDegrees = (minutes % 60) * 6;
     const secondsDegrees = seconds * 6;
 
@@ -60,6 +61,7 @@ export const useTimer = (initialMinutes: number = 5) => {
         stop,
         reset,
         angles: {
+            hours: hoursDegrees,
             minutes: minutesDegrees,
             seconds: secondsDegrees,
         }
