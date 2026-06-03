@@ -2,6 +2,7 @@ import React from 'react';
 
 interface AnalogClockProps {
     angles: {
+        hours: number;
         minutes: number;
         seconds: number;
     };
@@ -10,21 +11,27 @@ interface AnalogClockProps {
 export const AnalogClock: React.FC<AnalogClockProps> = ({ angles }) => {
     return (
         <div style={styles.clockCircle}>
-            {/* 분침 */}
+            {/* 🌟 시침 추가 (두껍고 가장 짧음) */}
+            <div style={{
+                ...styles.hand,
+                ...styles.hourHand,
+                transform: `rotate(${angles.hours}deg)`
+            }} />
+
+            {/* 분침 (중간 두께, 중간 길이) */}
             <div style={{
                 ...styles.hand,
                 ...styles.minuteHand,
                 transform: `rotate(${angles.minutes}deg)`
             }} />
 
-            {/* 초침 */}
+            {/* 초침 (얇고 가장 김) */}
             <div style={{
                 ...styles.hand,
                 ...styles.secondHand,
                 transform: `rotate(${angles.seconds}deg)`
             }} />
 
-            {/* 중앙 고정 핀 */}
             <div style={styles.centerPin} />
         </div>
     );
@@ -50,23 +57,33 @@ const styles: Record<string, React.CSSProperties> = {
         transformOrigin: 'bottom center',
         borderRadius: '4px',
     },
+    hourHand: {
+        width: '8px',
+        height: '55px',
+        backgroundColor: '#1c1c1e',
+        marginLeft: '-4px',
+        zIndex: 3,
+    },
     minuteHand: {
-        width: '6px',
-        height: '75px',
-        backgroundColor: '#3a3a3c',
-        marginLeft: '-3px', // 두께의 절반만큼 왼쪽으로 이동해 중앙 정렬
+        width: '5px',
+        height: '80px',
+        backgroundColor: '#48484a',
+        marginLeft: '-2.5px',
+        zIndex: 2,
     },
     secondHand: {
         width: '2px',
-        height: '90px',
+        height: '95px',
         backgroundColor: '#ff3b30',
-        marginLeft: '-1px', // 두께의 절반만큼 왼쪽으로 이동해 중앙 정렬
+        marginLeft: '-1px',
+        zIndex: 1,
     },
     centerPin: {
-        width: '12px',
-        height: '12px',
+        width: '14px',
+        height: '14px',
         borderRadius: '50%',
         backgroundColor: '#1c1c1e',
         position: 'absolute',
+        zIndex: 4,
     }
 };
