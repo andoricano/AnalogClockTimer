@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -71,3 +72,10 @@ export default defineConfig([
   },
 ])
 ```
+=======
+# AnalogClockTimer
+
+Timer를 Analog 시계로 보여주는 APP.  
+
+https://grateful-front-658.notion.site/Project-Exam-Timer-23e3fa60162980999b38e6ad3186bae3
+>>>>>>> 5bb6ee2d3f934f43a903c7edfe2ecea670190564
