@@ -76,8 +76,11 @@ export const useTimer = (clockMode: boolean) => {
         setTimerRunning(true);
     };
 
-    // 도중에 멈추면 timerRunning만 false가 되므로, renderingTime은 그 자리에 그대로 멈춥니다.
     const stop = () => setTimerRunning(false);
+
+    const setRenderStartTime = () => {
+        setRenderingTime(startTime);
+    };
 
     return {
         startTime,
@@ -86,6 +89,7 @@ export const useTimer = (clockMode: boolean) => {
         setEndTime,
         timerRunning,
         renderingTime,
+        setRenderStartTime,
         start,
         stop
     };

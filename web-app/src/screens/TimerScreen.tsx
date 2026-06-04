@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTimerContext } from '../context/TimerContext';
 import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
@@ -8,10 +8,17 @@ import { TimerSettingDialog } from '../components/TimerSettingDialog'; // 다이
 
 export const TimerScreen = () => {
     const { clockMode, setClockMode } = useTimerContext();
-    const { startTime, setStartTime, endTime, setEndTime, timerRunning, renderingTime, start, stop } = useTimer(clockMode);
+    const { startTime, setStartTime, endTime, setEndTime, timerRunning, renderingTime, setRenderStartTime, start, stop } = useTimer(clockMode);
 
     // 다이얼로그 오픈 여부 상태
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    useEffect(() => {
+        if (!clockMode) {
+            setRenderStartTime();
+        }
+    }, [clockMode]);
+
 
     const getFinalAngles = () => {
         const [h, m, s] = renderingTime.split(':').map(Number);
@@ -51,6 +58,7 @@ export const TimerScreen = () => {
                 onClose={() => setIsDialogOpen(false)}
                 onSave={(newStart, newEnd) => {
                     setStartTime(newStart);
+                    setRenderStartTime();
                     setEndTime(newEnd);
                 }}
             />
