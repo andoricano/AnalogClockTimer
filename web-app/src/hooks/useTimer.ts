@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { timeToSeconds, secondsToTime, formatTimeFromDate } from '../utils/timer';
 
+
 export const useTimer = (clockMode: boolean) => {
     const [startTime, setStartTime] = useState<string>('09:00:00');
     const [endTime, setEndTime] = useState<string>('10:20:00');
@@ -12,16 +13,6 @@ export const useTimer = (clockMode: boolean) => {
 
 
     useEffect(() => {
-        // [로그] useEffect 실행 시점의 전체 상태 파악
-        // console.log('--- [useEffect 실행] ---', {
-        //     clockMode,
-        //     timerRunning,
-        //     endTime,
-        //     renderingTime,
-        //     currentSeconds: timeToSeconds(renderingTime),
-        //     targetSeconds: timeToSeconds(endTime)
-        // });
-
         if (clockMode) {
             const updateCurrentTime = () => {
                 setRenderingTime(formatTimeFromDate(new Date()));
@@ -38,23 +29,15 @@ export const useTimer = (clockMode: boolean) => {
 
         const targetSeconds = timeToSeconds(endTime);
         let currentSeconds = timeToSeconds(renderingTime);
+        let effectiveTargetSeconds = targetSeconds;
+        if (effectiveTargetSeconds < timeToSeconds(startTime)) {
+            effectiveTargetSeconds += 86400;
+        }
 
         const tick = () => {
             const nextSeconds = currentSeconds + 1;
 
-            // [로그] 매 초마다 계산되는 타임로그 상세 출력
-            // console.log('⏰ [tick 계산로그]', {
-            //     현재시간_문자열: renderingTime,
-            //     현재시간_초: currentSeconds,
-            //     다음시간_초: nextSeconds,
-            //     목표시간_초: targetSeconds,
-            //     남은시간_초: targetSeconds - nextSeconds
-            // });
-
-            if (nextSeconds >= targetSeconds) {
-                // console.log('🚨 [종료 조건 만족!] endTime 고정 및 타이머 정지 시도', {
-                //     설정할_endTime: endTime
-                // });
+            if (nextSeconds >= effectiveTargetSeconds) {
                 setRenderingTime(endTime);
                 setTimerRunning(false);
             } else {
@@ -82,11 +65,34 @@ export const useTimer = (clockMode: boolean) => {
         setRenderingTime(startTime);
     };
 
+
+
+
+
+
+
+    const setTimeRange = (newStart: string, newEnd: string): boolean => {
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+
+        // 형식 체크 로그
+        if (!timeRegex.test(newStart) || !timeRegex.test(newEnd)) {
+            console.log('🚨 [setTimeRange] 형식 오류:', { newStart, newEnd });
+            return false;
+        }
+
+
+        setStartTime(newStart);
+        setEndTime(newEnd);
+
+        return true;
+    };
+
+
+
     return {
         startTime,
-        setStartTime,
         endTime,
-        setEndTime,
+        setTimeRange,
         timerRunning,
         renderingTime,
         setRenderStartTime,

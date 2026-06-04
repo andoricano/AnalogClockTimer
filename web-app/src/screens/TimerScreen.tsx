@@ -8,7 +8,7 @@ import { TimerSettingDialog } from '../components/TimerSettingDialog'; // 다이
 
 export const TimerScreen = () => {
     const { clockMode, setClockMode } = useTimerContext();
-    const { startTime, setStartTime, endTime, setEndTime, timerRunning, renderingTime, setRenderStartTime, start, stop } = useTimer(clockMode);
+    const { startTime, endTime, setTimeRange, timerRunning, renderingTime, setRenderStartTime, start, stop } = useTimer(clockMode);
 
     // 다이얼로그 오픈 여부 상태
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -57,9 +57,8 @@ export const TimerScreen = () => {
                 initialEndTime={endTime}
                 onClose={() => setIsDialogOpen(false)}
                 onSave={(newStart, newEnd) => {
-                    setStartTime(newStart);
+                    setTimeRange(newStart, newEnd);
                     setRenderStartTime();
-                    setEndTime(newEnd);
                 }}
             />
         </div>
