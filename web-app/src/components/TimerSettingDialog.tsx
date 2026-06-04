@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { minutesToTime, timeToMinutes } from '../utils/timer';
+import { TimeBlockInput } from './TimeBlockInput';
 
 interface TimerSettingDialogProps {
     isOpen: boolean;
@@ -58,30 +59,24 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
                             onChange={(e) => setIsDurationMode(e.target.checked)}
                             style={styles.toggleCheckbox}
                         />
-                        <span style={styles.toggleLabel}>운영시간 설정</span>
+                        <span style={styles.toggleLabel}>측정시간 설정</span>
                     </label>
                 </div>
 
                 <div style={styles.formGroup}>
                     <label style={styles.label}>시작 시간</label>
-                    <input
-                        type="text"
-                        placeholder="00:00:00"
+                    <TimeBlockInput
                         value={startInput}
-                        onChange={(e) => setStartInput(e.target.value)}
-                        style={styles.input}
+                        onChange={(newValue) => setStartInput(newValue)}
                     />
                 </div>
 
                 {!isDurationMode ? (
                     <div style={styles.formGroup}>
                         <label style={styles.label}>종료 시간</label>
-                        <input
-                            type="text"
-                            placeholder="00:00:00"
+                        <TimeBlockInput
                             value={endInput}
-                            onChange={(e) => setEndInput(e.target.value)}
-                            style={styles.input}
+                            onChange={(newValue) => setEndInput(newValue)}
                         />
                     </div>
                 ) : (
