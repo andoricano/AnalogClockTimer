@@ -8,7 +8,6 @@ import { useTimerContext } from '../context/TimerContext';
 import { useTimer } from '../hooks/useTimer';
 
 import { AnalogClock } from '../components/AnalogClock';
-import { Header } from '../components/Header';
 import { TimerSetting } from '../components/TimerSetting';
 import { TimerSettingDialog } from '../components/TimerSettingDialog';
 
@@ -46,11 +45,6 @@ export const TimerScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Header
-                clockMode={clockMode}
-                setClockMode={setClockMode}
-            />
-
             <View style={styles.mainContent}>
                 <AnalogClock angles={getFinalAngles()} />
 

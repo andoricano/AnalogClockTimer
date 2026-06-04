@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "native-app",
-    "slug": "native-app",
+    "name": "analog clock timer",
+    "slug": "clock-timer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/analog_clock_icon.png",
@@ -15,6 +15,20 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.andoricano.nativeapp"
-    }
+    },
+    "plugins": [
+      [
+        "expo-status-bar",
+        {
+          "hidden": true
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "hidden": true
+        }
+      ]
+    ]
   }
 }

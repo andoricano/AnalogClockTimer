@@ -1,3 +1,6 @@
+npx expo run:android       
+
+
 0. cd android
 
 1. release Build
@@ -5,3 +8,4 @@
 
 2. adb install 
 adb install -r app\build\outputs/apk/release/app-release.apk
+
