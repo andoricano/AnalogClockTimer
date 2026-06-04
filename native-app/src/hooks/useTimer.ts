@@ -63,6 +63,7 @@ export const useTimer = () => {
 
     const setRenderStartTime = () => {
         if (timerStatus === 'READY' || timerStatus === 'PAUSED') {
+            setTimerStatus('READY');
             setRenderingTime(startTime);
         }
     };

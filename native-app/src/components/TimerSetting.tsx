@@ -27,6 +27,19 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
     onClickStop,
     onClickSetting
 }) => {
+    const getButtonText = () => {
+        switch (timerStatus) {
+            case 'RUNNING':
+                return '중지하기';
+            case 'PAUSED':
+                return '재개하기';
+            case 'FINISHED':
+                return '다시하기';
+            case 'READY':
+            default:
+                return '시작하기';
+        }
+    };
     const isRunning = timerStatus === 'RUNNING';
     const showRefresh = timerStatus === 'READY' || timerStatus === 'PAUSED';
 
@@ -72,7 +85,7 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
                     ]}
                 >
                     <Text style={styles.actionButtonText}>
-                        {isRunning ? '중지하기' : '시작하기'}
+                        {getButtonText()}
                     </Text>
                 </Pressable>
             </View>
