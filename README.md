@@ -1,5 +1,46 @@
 # AnalogClockTimer
 
-Timer를 Analog 시계로 보여주는 APP.  
+아날로그 시계 인터페이스를 통해 타이머를 시각적으로 직관적으로 관리할 수 있는 웹 및 모바일 애플리케이션입니다.
 
-https://grateful-front-658.notion.site/Project-Exam-Timer-23e3fa60162980999b38e6ad3186bae3
+## 주요 기능
+- **듀얼 모드 지원**: 실시간 시계(Clock) 모드와 사용자 설정 타이머(Timer) 모드 간의 자유로운 전환.
+- **시각적 타이머**: 아날로그 시계 디자인을 활용하여 남은 시간을 직관적으로 확인.
+- **커스텀 시간 설정**: 시작 시간과 종료 시간을 자유롭게 설정하여 원하는 범위의 타이머 운용 가능.
+- **자동 보정 로직**: 종료 시간이 시작 시간보다 빠른 경우(밤을 넘기는 일정 등) 자동으로 다음 날로 인식하여 정확한 측정 지원.
+- **실시간 동기화**: 설정 변경 즉시 화면 반영 및 타이머 제어 기능 제공.
+
+## 플랫폼 및 기술 스택
+- **Platform**: Web, Mobile
+- **Library**: React, React Native
+- **Language**: TypeScript
+- **State Management**: React Hooks (useState, useEffect, Context API)
+
+## 주요 컴포넌트 구조
+- `TimerScreen`: 앱의 메인 컨테이너, 상태 관리 및 모드 간 전환 로직 담당.
+- `AnalogClock`: 전달받은 시간 데이터를 바탕으로 시/분/초 바늘의 각도를 계산하여 렌더링.
+- `TimerSettingDialog`: 사용자가 시작 및 종료 시간을 입력하고 검증하는 인터페이스 제공.
+- `Header`: 실시간 모드 전환 버튼 및 로고 노출.
+
+## 커스텀 Hook (`useTimer`)
+이 앱의 핵심 엔진으로, 시간 계산 및 제어를 담당합니다.
+- `setTimeRange(start, end)`: 시작/종료 시간을 안전하게 업데이트하며 유효성 검증을 수행합니다.
+- `start() / stop()`: 타이머의 흐름을 제어합니다.
+- `renderingTime`: 현재 화면에 렌더링되어야 할 시간 값을 1초마다 동기화합니다.
+
+## 로직 특징
+- **유효성 검사**: 입력받은 시간 문자열의 정규식 검사를 통해 잘못된 포맷의 입력을 방지합니다.
+- **시간 역전 처리**: `useEffect` 내에서 `effectiveTargetSeconds` 계산을 통해, 시작 시간과 종료 시간이 비정상적으로 입력되어도 타이머가 즉시 종료되지 않고 올바르게 흐르도록 설계되었습니다.
+
+## 설치 및 실행
+
+### Web-APP
+1. 저장소를 클론합니다.
+2. `cd web-app`을 통해 프로젝트 폴더로 이동합니다.
+3. `npm install`을 통해 필요한 의존성을 설치합니다.
+4. `npm run dev`를 통해 개발 서버를 실행합니다.
+
+### Native-APP
+1. 저장소를 클론합니다.
+2. `cd native-app`을 통해 프로젝트 폴더로 이동합니다.
+3. `npm install`을 통해 필요한 의존성을 설치합니다.
+4. `npm run dev`를 통해 개발 서버를 실행합니다.
