@@ -8,7 +8,7 @@ interface TimerContextType {
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [clockMode, setClockMode] = useState<boolean>(true);
+    const [clockMode, setClockMode] = useState<boolean>(false);
 
     return (
         <TimerContext.Provider value={{ clockMode, setClockMode }}>
