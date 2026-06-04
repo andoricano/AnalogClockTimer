@@ -61,41 +61,17 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
                     );
                 })}
 
-            <View
-                style={[
-                    styles.hourHand,
-                    {
-                        transform: [
-                            { translateX: -4 },
-                            { rotate: `${angles.hours}deg` },
-                        ],
-                    },
-                ]}
-            />
+            <View style={[styles.handWrapper, { transform: [{ rotate: `${angles.hours}deg` }] }]}>
+                <View style={styles.hourHand} />
+            </View>
 
-            <View
-                style={[
-                    styles.minuteHand,
-                    {
-                        transform: [
-                            { translateX: -2 },
-                            { rotate: `${angles.minutes}deg` },
-                        ],
-                    },
-                ]}
-            />
+            <View style={[styles.handWrapper, { transform: [{ rotate: `${angles.minutes}deg` }] }]}>
+                <View style={styles.minuteHand} />
+            </View>
 
-            <View
-                style={[
-                    styles.secondHand,
-                    {
-                        transform: [
-                            { translateX: -1 },
-                            { rotate: `${angles.seconds}deg` },
-                        ],
-                    },
-                ]}
-            />
+            <View style={[styles.handWrapper, { transform: [{ rotate: `${angles.seconds}deg` }] }]}>
+                <View style={styles.secondHand} />
+            </View>
 
             <View style={styles.centerPin} />
         </>
@@ -149,10 +125,16 @@ const styles = StyleSheet.create({
         color: '#1c1c1e',
     },
 
+    handWrapper: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+    },
+
     hourHand: {
         position: 'absolute',
         bottom: '50%',
-        left: '50%',
         width: 8,
         height: CLOCK_SIZE * 0.25,
         backgroundColor: '#1c1c1e',
@@ -162,7 +144,6 @@ const styles = StyleSheet.create({
     minuteHand: {
         position: 'absolute',
         bottom: '50%',
-        left: '50%',
         width: 4,
         height: CLOCK_SIZE * 0.36,
         backgroundColor: '#48484a',
@@ -172,7 +153,6 @@ const styles = StyleSheet.create({
     secondHand: {
         position: 'absolute',
         bottom: '50%',
-        left: '50%',
         width: 2,
         height: CLOCK_SIZE * 0.43,
         backgroundColor: '#ff3b30',
