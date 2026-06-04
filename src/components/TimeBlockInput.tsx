@@ -1,12 +1,18 @@
 import React from 'react';
 
 interface TimeBlockInputProps {
-    value: string; // "HH:MM:SS" 형식
+    value: string;
     onChange: (newValue: string) => void;
 }
 
 export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange }) => {
-    const timeParts = value ? value.split(':') : ['00', '00', '00'];
+    const rawParts = value ? value.split(':') : [];
+    const timeParts = [
+        rawParts[0] ?? '',
+        rawParts[1] ?? '',
+        rawParts[2] ?? ''
+    ];
+
     const hours = Number(timeParts[0]) || 0;
     const minutes = Number(timeParts[1]) || 0;
     const seconds = Number(timeParts[2]) || 0;
@@ -32,13 +38,11 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
     };
 
     const handleInputChange = (field: 'h' | 'm' | 's', inputValue: string) => {
-        // 숫자만 남기고 최대 2글자까지만 허용
         const sanitized = inputValue.replace(/[^0-9]/g, '').slice(0, 2);
 
-        // 입력 중에 칸이 비어있을 때는 공백 상태를 그대로 상위로 보냄 (타이핑 끊김 방지)
-        let hStr = timeParts[0] || '00';
-        let mStr = timeParts[1] || '00';
-        let sStr = timeParts[2] || '00';
+        let hStr = timeParts[0];
+        let mStr = timeParts[1];
+        let sStr = timeParts[2];
 
         if (field === 'h') hStr = sanitized;
         if (field === 'm') mStr = sanitized;
@@ -47,7 +51,6 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
         onChange(`${hStr}:${mStr}:${sStr}`);
     };
 
-    // 포커스가 빠져나갈 때 최대 범위를 검증하고 2자리 포맷팅(00)을 완성하는 함수
     const handleBlur = (field: 'h' | 'm' | 's') => {
         let hNum = Number(timeParts[0]) || 0;
         let mNum = Number(timeParts[1]) || 0;
@@ -55,7 +58,7 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
 
         if (field === 'h') hNum = Math.min(hNum, 23);
         if (field === 'm') mNum = Math.min(mNum, 59);
-        if (field === 's') mNum = Math.min(sNum, 59);
+        if (field === 's') sNum = Math.min(sNum, 59);
 
         const hStr = hNum.toString().padStart(2, '0');
         const mStr = mNum.toString().padStart(2, '0');
@@ -71,7 +74,8 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
                 <button type="button" onClick={() => updateValue('h', 1)} style={styles.arrowButton}>▲</button>
                 <input
                     type="text"
-                    value={timeParts[0] ?? '00'}
+                    placeholder="00"
+                    value={timeParts[0]}
                     onChange={(e) => handleInputChange('h', e.target.value)}
                     onBlur={() => handleBlur('h')}
                     style={styles.blockInput}
@@ -86,7 +90,8 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
                 <button type="button" onClick={() => updateValue('m', 1)} style={styles.arrowButton}>▲</button>
                 <input
                     type="text"
-                    value={timeParts[1] ?? '00'}
+                    placeholder="00"
+                    value={timeParts[1]}
                     onChange={(e) => handleInputChange('m', e.target.value)}
                     onBlur={() => handleBlur('m')}
                     style={styles.blockInput}
@@ -101,7 +106,8 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange 
                 <button type="button" onClick={() => updateValue('s', 1)} style={styles.arrowButton}>▲</button>
                 <input
                     type="text"
-                    value={timeParts[2] ?? '00'}
+                    placeholder="00"
+                    value={timeParts[2]}
                     onChange={(e) => handleInputChange('s', e.target.value)}
                     onBlur={() => handleBlur('s')}
                     style={styles.blockInput}
