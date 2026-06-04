@@ -51,8 +51,6 @@ export const useTimer = (clockMode: boolean) => {
 
     }, [clockMode, timerRunning, endTime, renderingTime]);
 
-
-
     // 시작을 누를 때만 시작 시간에서 출발하도록 설정
     const start = () => {
         setRenderingTime(startTime);
@@ -64,12 +62,6 @@ export const useTimer = (clockMode: boolean) => {
     const setRenderStartTime = () => {
         setRenderingTime(startTime);
     };
-
-
-
-
-
-
 
     const setTimeRange = (newStart: string, newEnd: string): boolean => {
         const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;

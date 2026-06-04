@@ -5,10 +5,19 @@ interface HeaderProps {
     setClockMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+
+
 export const Header: React.FC<HeaderProps> = ({ clockMode, setClockMode }) => {
     return (
         <header style={styles.header}>
-            <div style={styles.logo}>⏰ LoopClock</div>
+            <div style={styles.logoContainer}>
+                <img
+                    src="/analog_clock_icon.png"
+                    alt="Logo"
+                    style={styles.logoImage}
+                />
+                <p style={styles.logoText}>Analog Clock Timer</p>
+            </div>
             <button
                 type="button"
                 onClick={() => setClockMode((prev) => !prev)}
@@ -36,7 +45,18 @@ const styles: Record<string, React.CSSProperties> = {
         borderBottom: '1px solid #e5e5ea',
         zIndex: 10,
     },
-    logo: {
+    logoContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+    logoImage: {
+        width: '24px',
+        height: '24px',
+        objectFit: 'contain',
+    },
+    logoText: {
+        margin: 0,
         fontSize: '18px',
         fontWeight: 'bold',
         color: '#1c1c1e',
