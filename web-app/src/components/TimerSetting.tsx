@@ -52,7 +52,7 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
                         onMouseLeave={() => setIsHoveredSetting(false)}
                         style={{
                             ...styles.settingButton,
-                            backgroundColor: isHoveredSetting ? '#d1d1d6' : '#e5e5ea' // Setting 호버 시 더 어두운 그레이
+                            backgroundColor: isHoveredSetting ? '#d1d1d6' : '#e5e5ea'
                         }}
                     >
                         Setting

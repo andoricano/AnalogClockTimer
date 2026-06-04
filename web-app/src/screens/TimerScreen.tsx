@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { useTimerContext } from '../context/TimerContext';
 import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
 import { Header } from '../components/Header';
 import { TimerSetting } from '../components/TimerSetting';
+import { TimerSettingDialog } from '../components/TimerSettingDialog'; // 다이얼로그 가져오기
 
 export const TimerScreen = () => {
     const { clockMode, setClockMode } = useTimerContext();
+    const { startTime, setStartTime, endTime, setEndTime, timerRunning, renderingTime, start, stop } = useTimer(clockMode);
 
-    const { startTime, endTime, timerRunning, renderingTime, start, stop } = useTimer(clockMode);
+    // 다이얼로그 오픈 여부 상태
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const getFinalAngles = () => {
         const [h, m, s] = renderingTime.split(':').map(Number);
@@ -33,10 +37,23 @@ export const TimerScreen = () => {
                             isRunning={timerRunning}
                             onClickStart={start}
                             onClickStop={stop}
+                            onClickSetting={() => setIsDialogOpen(true)} // 세팅 버튼 클릭 시 팝업 활성화
                         />
                     </div>
                 )}
             </main>
+
+            {/* 다이얼로그 상단 배치 */}
+            <TimerSettingDialog
+                isOpen={isDialogOpen}
+                initialStartTime={startTime}
+                initialEndTime={endTime}
+                onClose={() => setIsDialogOpen(false)}
+                onSave={(newStart, newEnd) => {
+                    setStartTime(newStart);
+                    setEndTime(newEnd);
+                }}
+            />
         </div>
     );
 };
@@ -65,7 +82,7 @@ const styles: Record<string, React.CSSProperties> = {
         flexDirection: 'column',
         alignItems: 'center',
         gap: '20px',
-        width: '80%',
+        width: '90%',
         maxWidth: '1000px',
     },
 };
