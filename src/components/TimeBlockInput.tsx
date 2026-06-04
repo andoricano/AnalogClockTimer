@@ -1,97 +1,113 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 
 interface TimeBlockInputProps {
-    value: string; // "HH:MM:SS" 형식의 문자열
+    value: string; // "HH:MM:SS" 형식
     onChange: (newValue: string) => void;
 }
 
 export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({ value, onChange }) => {
-    // 기존 "HH:MM:SS" 데이터를 시, 분, 초 배열로 분리 (없으면 공백)
     const timeParts = value ? value.split(':') : ['00', '00', '00'];
-    const hours = timeParts[0] || '';
-    const minutes = timeParts[1] || '';
-    const seconds = timeParts[2] || '';
+    const hours = Number(timeParts[0]) || 0;
+    const minutes = Number(timeParts[1]) || 0;
+    const seconds = Number(timeParts[2]) || 0;
 
-    // 각 input 엘리먼트를 제어하기 위한 ref
-    const hourRef = useRef<HTMLInputElement>(null);
-    const minuteRef = useRef<HTMLInputElement>(null);
-    const secondRef = useRef<HTMLInputElement>(null);
+    const updateValue = (field: 'h' | 'm' | 's', amount: number) => {
+        let newH = hours;
+        let newM = minutes;
+        let newS = seconds;
 
-    // 내부 입력 값 변경 연동 처리 함수
-    const handleInputChange = (
-        field: 'h' | 'm' | 's',
-        currentValue: string,
-        nextRef: React.RefObject<HTMLInputElement | null>
-    ) => {
-        // 숫자만 입력 가능하도록 필터링
-        const sanitized = currentValue.replace(/[^0-9]/g, '');
-
-        // 두 글자까지만 허용
-        const truncated = sanitized.slice(0, 2);
-
-        let newHours = hours;
-        let newMinutes = minutes;
-        let newSeconds = seconds;
-
-        if (field === 'h') newHours = truncated;
-        if (field === 'm') newMinutes = truncated;
-        if (field === 's') newSeconds = truncated;
-
-        // 상위 컴포넌트로 규격화된 시간 문자열 전달
-        onChange(`${newHours.padStart(2, '0')}:${newMinutes.padStart(2, '0')}:${newSeconds.padStart(2, '0')}`);
-
-        // 글자 수가 2개 채워지면 다음 입력 칸으로 포커스 자동 이동
-        if (truncated.length === 2 && nextRef.current) {
-            nextRef.current.focus();
-            nextRef.current.select(); // 기존 텍스트 자동 선택 처리로 덮어쓰기 편하게 유도
+        if (field === 'h') {
+            newH = (hours + amount + 24) % 24;
+        } else if (field === 'm') {
+            newM = (minutes + amount + 60) % 60;
+        } else if (field === 's') {
+            newS = (seconds + amount + 60) % 60;
         }
+
+        const hStr = newH.toString().padStart(2, '0');
+        const mStr = newM.toString().padStart(2, '0');
+        const sStr = newS.toString().padStart(2, '0');
+
+        onChange(`${hStr}:${mStr}:${sStr}`);
     };
 
-    // 지우기(Backspace) 버튼을 눌렀을 때 이전 칸으로 역이동 제어
-    const handleKeyDown = (
-        field: 'm' | 's',
-        currentValue: string,
-        prevRef: React.RefObject<HTMLInputElement | null>,
-        e: React.KeyboardEvent<HTMLInputElement>
-    ) => {
-        if (e.key === 'Backspace' && currentValue === '' && prevRef.current) {
-            prevRef.current.focus();
-        }
+    const handleInputChange = (field: 'h' | 'm' | 's', inputValue: string) => {
+        // 숫자만 남기고 최대 2글자까지만 허용
+        const sanitized = inputValue.replace(/[^0-9]/g, '').slice(0, 2);
+
+        // 입력 중에 칸이 비어있을 때는 공백 상태를 그대로 상위로 보냄 (타이핑 끊김 방지)
+        let hStr = timeParts[0] || '00';
+        let mStr = timeParts[1] || '00';
+        let sStr = timeParts[2] || '00';
+
+        if (field === 'h') hStr = sanitized;
+        if (field === 'm') mStr = sanitized;
+        if (field === 's') sStr = sanitized;
+
+        onChange(`${hStr}:${mStr}:${sStr}`);
+    };
+
+    // 포커스가 빠져나갈 때 최대 범위를 검증하고 2자리 포맷팅(00)을 완성하는 함수
+    const handleBlur = (field: 'h' | 'm' | 's') => {
+        let hNum = Number(timeParts[0]) || 0;
+        let mNum = Number(timeParts[1]) || 0;
+        let sNum = Number(timeParts[2]) || 0;
+
+        if (field === 'h') hNum = Math.min(hNum, 23);
+        if (field === 'm') mNum = Math.min(mNum, 59);
+        if (field === 's') mNum = Math.min(sNum, 59);
+
+        const hStr = hNum.toString().padStart(2, '0');
+        const mStr = mNum.toString().padStart(2, '0');
+        const sStr = sNum.toString().padStart(2, '0');
+
+        onChange(`${hStr}:${mStr}:${sStr}`);
     };
 
     return (
         <div style={styles.blockContainer}>
-            <input
-                ref={hourRef}
-                type="text"
-                maxLength={2}
-                placeholder="00"
-                value={hours}
-                onChange={(e) => handleInputChange('h', e.target.value, minuteRef)}
-                style={styles.blockInput}
-            />
+            {/* 시 (Hour) 블록 */}
+            <div style={styles.unitWrapper}>
+                <button type="button" onClick={() => updateValue('h', 1)} style={styles.arrowButton}>▲</button>
+                <input
+                    type="text"
+                    value={timeParts[0] ?? '00'}
+                    onChange={(e) => handleInputChange('h', e.target.value)}
+                    onBlur={() => handleBlur('h')}
+                    style={styles.blockInput}
+                />
+                <button type="button" onClick={() => updateValue('h', -1)} style={styles.arrowButton}>▼</button>
+            </div>
+
             <span style={styles.colon}>:</span>
-            <input
-                ref={minuteRef}
-                type="text"
-                maxLength={2}
-                placeholder="00"
-                value={minutes}
-                onChange={(e) => handleInputChange('m', e.target.value, secondRef)}
-                onKeyDown={(e) => handleKeyDown('m', minutes, hourRef, e)}
-                style={styles.blockInput}
-            />
+
+            {/* 분 (Minute) 블록 */}
+            <div style={styles.unitWrapper}>
+                <button type="button" onClick={() => updateValue('m', 1)} style={styles.arrowButton}>▲</button>
+                <input
+                    type="text"
+                    value={timeParts[1] ?? '00'}
+                    onChange={(e) => handleInputChange('m', e.target.value)}
+                    onBlur={() => handleBlur('m')}
+                    style={styles.blockInput}
+                />
+                <button type="button" onClick={() => updateValue('m', -1)} style={styles.arrowButton}>▼</button>
+            </div>
+
             <span style={styles.colon}>:</span>
-            <input
-                ref={secondRef}
-                type="text"
-                maxLength={2}
-                placeholder="00"
-                value={seconds}
-                onChange={(e) => handleInputChange('s', e.target.value, { current: null })}
-                onKeyDown={(e) => handleKeyDown('s', seconds, minuteRef, e)}
-                style={styles.blockInput}
-            />
+
+            {/* 초 (Second) 블록 */}
+            <div style={styles.unitWrapper}>
+                <button type="button" onClick={() => updateValue('s', 1)} style={styles.arrowButton}>▲</button>
+                <input
+                    type="text"
+                    value={timeParts[2] ?? '00'}
+                    onChange={(e) => handleInputChange('s', e.target.value)}
+                    onBlur={() => handleBlur('s')}
+                    style={styles.blockInput}
+                />
+                <button type="button" onClick={() => updateValue('s', -1)} style={styles.arrowButton}>▼</button>
+            </div>
         </div>
     );
 };
@@ -101,30 +117,48 @@ const styles: Record<string, React.CSSProperties> = {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: '#f2f2f7',
         border: '1px solid #e5e5ea',
-        borderRadius: '8px',
-        padding: '0 8px',
+        borderRadius: '12px',
+        padding: '8px 12px',
         width: '100%',
         boxSizing: 'border-box',
     },
-    blockInput: {
+    unitWrapper: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         flex: 1,
-        width: '32px',
-        height: '40px',
+    },
+    blockInput: {
+        width: '100%',
+        height: '32px',
         border: 'none',
         backgroundColor: 'transparent',
-        fontSize: '16px',
+        fontSize: '18px',
         fontFamily: 'monospace',
+        fontWeight: 'bold',
         color: '#1c1c1e',
         textAlign: 'center',
         outline: 'none',
+        padding: 0,
+    },
+    arrowButton: {
+        background: 'none',
+        border: 'none',
+        fontSize: '10px',
+        color: '#8e8e93',
+        cursor: 'pointer',
+        padding: '2px 8px',
+        userSelect: 'none',
     },
     colon: {
-        fontSize: '16px',
+        fontSize: '18px',
         fontWeight: 'bold',
         color: '#8e8e93',
-        padding: '0 2px',
+        padding: '0 4px',
+        marginTop: '-2px',
         userSelect: 'none',
     },
 };
