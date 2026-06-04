@@ -1,4 +1,7 @@
-npx expo run:android       
+txt 파일입니다.
+
+npx expo prebuild --clean
+npx expo run:android
 
 
 0. cd android
@@ -6,6 +9,5 @@ npx expo run:android
 1. release Build
 .\gradlew assembleRelease
 
-2. adb install 
+2. adb install
 adb install -r app\build\outputs/apk/release/app-release.apk
-

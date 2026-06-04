@@ -4,26 +4,27 @@ import {
     StyleSheet,
 } from 'react-native';
 
-import { useTimerContext } from '../context/TimerContext';
 import { useTimer } from '../hooks/useTimer';
 
 import { AnalogClock } from '../components/AnalogClock';
 import { TimerSetting } from '../components/TimerSetting';
 import { TimerSettingDialog } from '../components/TimerSettingDialog';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export const TimerScreen = () => {
-    const { clockMode, setClockMode } = useTimerContext();
-
     const {
+        clockMode,
+        setClockMode,
         startTime,
         endTime,
         setTimeRange,
-        timerRunning,
+        timerStatus,
+        setTimerStatus,
         renderingTime,
         setRenderStartTime,
         start,
         stop,
-    } = useTimer(clockMode);
+    } = useTimer();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -53,7 +54,8 @@ export const TimerScreen = () => {
                         <TimerSetting
                             startTime={startTime}
                             endTime={endTime}
-                            isRunning={timerRunning}
+                            timerStatus={timerStatus}
+                            onClickRefresh={setRenderStartTime}
                             onClickStart={start}
                             onClickStop={stop}
                             onClickSetting={() =>
@@ -74,6 +76,7 @@ export const TimerScreen = () => {
                     setRenderStartTime();
                 }}
             />
+
         </View>
     );
 };

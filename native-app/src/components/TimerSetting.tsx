@@ -5,48 +5,61 @@ import {
     Pressable,
     StyleSheet,
 } from 'react-native';
+import { TimerStatus } from '../hooks/useTimer';
+import { Ionicons } from '@expo/vector-icons';
 
 interface TimerSettingProps {
     startTime: string;
     endTime: string;
-    isRunning: boolean;
+    timerStatus: TimerStatus;
+    onClickRefresh: () => void;
     onClickStart: () => void;
     onClickStop: () => void;
-    onClickSetting?: () => void;
+    onClickSetting: () => void;
 }
 
 export const TimerSetting: React.FC<TimerSettingProps> = ({
     startTime,
     endTime,
-    isRunning,
+    timerStatus,
+    onClickRefresh,
     onClickStart,
     onClickStop,
-    onClickSetting,
+    onClickSetting
 }) => {
+    const isRunning = timerStatus === 'RUNNING';
+    const showRefresh = timerStatus === 'READY' || timerStatus === 'PAUSED';
+
     return (
         <View style={styles.settingBox}>
-            <View style={styles.infoArea}>
-                <View style={styles.item}>
-                    <Text style={styles.label}>시작 시간:</Text>
-                    <Text style={styles.value}>{startTime}</Text>
+            <View style={styles.flexRow}>
+                {/* 시간 정보 영역 (좌측) */}
+                <View style={styles.infoArea}>
+                    <View style={styles.item}>
+                        <Text style={styles.label}>시작 시간:</Text>
+                        <Text style={styles.value}>{startTime}</Text>
+                    </View>
+                    <View style={[styles.item, { marginBottom: 0 }]}>
+                        <Text style={styles.label}>종료 시간:</Text>
+                        <Text style={styles.value}>{endTime}</Text>
+                    </View>
                 </View>
 
-                <View style={styles.divider} />
-
-                <View style={styles.item}>
-                    <Text style={styles.label}>종료 시간:</Text>
-                    <Text style={styles.value}>{endTime}</Text>
-                </View>
+                {/* 통합 편집 버튼 영역 (우측) */}
+                <Pressable onPress={onClickSetting} style={styles.editButton}>
+                    <Ionicons name="create-outline" size={22} color="#007aff" />
+                </Pressable>
             </View>
 
             <View style={styles.buttonArea}>
-                {!isRunning && (
+
+                {showRefresh && (
                     <Pressable
-                        onPress={onClickSetting}
-                        style={styles.settingButton}
+                        onPress={onClickRefresh}
+                        style={styles.refreshButton}
                     >
-                        <Text style={styles.settingButtonText}>
-                            Setting
+                        <Text style={styles.refreshButtonText}>
+                            시계 초기화
                         </Text>
                     </Pressable>
                 )}
@@ -55,13 +68,11 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
                     onPress={isRunning ? onClickStop : onClickStart}
                     style={[
                         styles.actionButton,
-                        isRunning
-                            ? styles.stopButton
-                            : styles.startButton,
+                        isRunning ? styles.stopButton : styles.startButton,
                     ]}
                 >
                     <Text style={styles.actionButtonText}>
-                        {isRunning ? 'Stop' : 'Start'}
+                        {isRunning ? '중지하기' : '시작하기'}
                     </Text>
                 </Pressable>
             </View>
@@ -71,12 +82,10 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
 
 const styles = StyleSheet.create({
     settingBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        alignItems: 'stretch',
 
         width: '100%',
-        height: 60,
 
         backgroundColor: '#ffffff',
 
@@ -85,16 +94,26 @@ const styles = StyleSheet.create({
         borderRadius: 12,
 
         paddingHorizontal: 16,
+        paddingVertical: 16,
     },
-
-    infoArea: {
+    flexRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
     },
-
+    infoArea: {
+        flexDirection: 'column',
+    },
     item: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 8,
+    },
+    editButton: {
+        padding: 12,
+        backgroundColor: '#f2f2f7',
+        borderRadius: 8,
     },
 
     label: {
@@ -110,21 +129,16 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 
-    divider: {
-        width: 1,
-        height: 16,
-        backgroundColor: '#e5e5ea',
-        marginHorizontal: 16,
-    },
-
     buttonArea: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'flex-end',
+        marginTop: 4,
     },
 
     actionButton: {
-        width: 80,
-        height: 36,
+        flex: 1,
+        height: 40,
 
         borderRadius: 6,
 
@@ -133,7 +147,7 @@ const styles = StyleSheet.create({
     },
 
     startButton: {
-        backgroundColor: '#007aff',
+        backgroundColor: '#18c25c',
     },
 
     stopButton: {
@@ -146,13 +160,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 
-    settingButton: {
-        width: 80,
-        height: 36,
+    refreshButton: {
+        flex: 1,
+        height: 40,
 
         borderRadius: 6,
 
-        backgroundColor: '#e5e5ea',
+        backgroundColor: '#007aff',
 
         justifyContent: 'center',
         alignItems: 'center',
@@ -160,8 +174,8 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
 
-    settingButtonText: {
-        color: '#555559',
+    refreshButtonText: {
+        color: '#ffffff',
         fontSize: 14,
         fontWeight: 'bold',
     },
