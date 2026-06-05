@@ -4,7 +4,9 @@ npx expo prebuild --clean
 npx expo run:android
 
 
-0. cd android
+릴리즈 테스트 버전 빌드
+0. android 가기
+cd android
 
 1. release Build
 .\gradlew assembleRelease

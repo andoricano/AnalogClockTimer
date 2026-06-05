@@ -6,8 +6,6 @@ import {
     Pressable,
     Keyboard,
     StyleSheet,
-    Platform,
-
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { TimeBlockInput } from './TimeBlockInput';
@@ -32,52 +30,31 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     const [endInput, setEndInput] = useState(initialEndTime);
     const [isDurationMode, setIsDurationMode] = useState(false);
     const [durationInput, setDurationInput] = useState('90');
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
-    useEffect(() => {
-        if (!isOpen) return;
 
-        setKeyboardHeight(0);
-        // 키보드가 나타날 때 높이만큼 상태값 지정
-        const showSubscription = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-            (e) => setKeyboardHeight(e.endCoordinates.height)
-        );
-        // 키보드가 사라질 때 0으로 초기화
-        const hideSubscription = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-            () => setKeyboardHeight(0)
-        );
-
-        return () => {
-            showSubscription.remove();
-            hideSubscription.remove();
-        };
-    }, [isOpen]);
-
+    // 💡 오직 모달이 열릴 때만 초기 데이터를 주입하도록 격리 (부모 리렌더링 방어)
     useEffect(() => {
         if (isOpen) {
             setStartInput(initialStartTime);
             setEndInput(initialEndTime);
         }
-    }, [isOpen, initialStartTime, initialEndTime]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     const handleSave = () => {
+        // 💡 [UX 핵심] 버튼 누르자마자 부모 데이터를 즉시 바꿉니다.
         if (isDurationMode) {
             const startMinutes = timeToMinutes(startInput);
-            const calculatedEndMinutes =
-                startMinutes + Number(durationInput);
-
-            const calculatedEndTime =
-                minutesToTime(calculatedEndMinutes);
+            const calculatedEndMinutes = startMinutes + Number(durationInput);
+            const calculatedEndTime = minutesToTime(calculatedEndMinutes);
 
             onSave(startInput, calculatedEndTime);
         } else {
             onSave(startInput, endInput);
         }
 
+        // 데이터 반영 후 바로 닫기 요청
         onClose();
     };
-
 
     return (
         <Modal
@@ -87,15 +64,18 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
                 onClose();
             }}
             onBackButtonPress={onClose}
-            avoidKeyboard={false} // 🚀 자동 계산을 끄고 수동으로 제어합니다.
+            avoidKeyboard={true}
+            style={styles.modalCentered}
+
+            useNativeDriver={true}
+            hideModalContentWhileAnimating={true}
             animationIn="fadeIn"
             animationOut="fadeOut"
-            backdropOpacity={0.4}
-            // 🚀 키보드가 켜지면 하단 여백을 주어 물리적으로 밀어 올립니다.
-            style={[
-                styles.modalCentered,
-                keyboardHeight > 0 && { justifyContent: 'flex-end', marginBottom: keyboardHeight + 20 }
-            ]}
+
+            animationInTiming={0}
+            animationOutTiming={0}
+            backdropTransitionInTiming={0}
+            backdropTransitionOutTiming={1}
         >
             <View style={styles.dialogBox}>
                 <View style={styles.header}>
@@ -143,14 +123,8 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
 
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+const styles = StyleSheet.create({
     modalCentered: {
         margin: 0,
         justifyContent: 'center',
