@@ -3,6 +3,9 @@ import { storage } from "./storage";
 const TIMER_KEYS = {
     TIME: 'timer_time',
     MINUTE: 'timer_minute',
+
+    START_TIME: 'timer_start_time',
+    END_TIME: 'timer_end_time',
 } as const;
 
 export const timerStorage = {
@@ -45,5 +48,22 @@ export const timerStorage = {
 
     clearMinute: async () => {
         await storage.remove(TIMER_KEYS.MINUTE);
+    },
+
+
+    setStartTime: async (time: string) => {
+        await storage.set(TIMER_KEYS.START_TIME, time);
+    },
+
+    getStartTime: async () => {
+        return await storage.get(TIMER_KEYS.START_TIME);
+    },
+
+    setEndTime: async (time: string) => {
+        await storage.set(TIMER_KEYS.END_TIME, time);
+    },
+
+    getEndTime: async () => {
+        return await storage.get(TIMER_KEYS.END_TIME);
     },
 };

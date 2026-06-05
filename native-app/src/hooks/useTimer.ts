@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { timeToSeconds, secondsToTime, formatTimeFromDate } from '../utils/timer';
+import { timerStorage } from '../utils/storage/timeStorage';
 
 export type TimerStatus = 'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED';
 
@@ -9,6 +10,21 @@ export const useTimer = () => {
     const [endTime, setEndTime] = useState<string>('09:00:10');
     const [timerStatus, setTimerStatus] = useState<TimerStatus>('READY');
     const [renderingTime, setRenderingTime] = useState<string>('09:00:00');
+
+    useEffect(() => {
+        const load = async () => {
+            const start = await timerStorage.getStartTime();
+            const end = await timerStorage.getEndTime();
+
+            console.log("LOAD", start, end);
+
+            if (start) setStartTime(start);
+            if (end) setEndTime(end);
+        };
+
+        load();
+    }, []);
+
 
     useEffect(() => {
         if (timerStatus === 'READY') {
@@ -74,18 +90,25 @@ export const useTimer = () => {
         setRenderingTime(startTime);
     };
 
+
     const setTimeRange = (newStart: string, newEnd: string): boolean => {
         const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
         if (!timeRegex.test(newStart) || !timeRegex.test(newEnd)) {
-            console.log('🚨 [setTimeRange] 형식 오류:', { newStart, newEnd });
             return false;
         }
 
         setStartTime(newStart);
         setEndTime(newEnd);
+
+        void timerStorage.setStartTime(newStart);
+        void timerStorage.setEndTime(newEnd);
+
+        console.log("SAVE", newStart, newEnd);
         return true;
     };
+
+
 
     return {
         clockMode,
