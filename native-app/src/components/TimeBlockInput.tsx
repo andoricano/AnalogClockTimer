@@ -5,7 +5,9 @@ import {
     TextInput,
     Pressable,
     StyleSheet,
+    Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface TimeBlockInputProps {
     value: string;
@@ -94,18 +96,17 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('h', 1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▲</Text>
+                    <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
 
                 <TextInput
                     placeholder="00"
+                    placeholderTextColor="#c7c7cc"
                     value={timeParts[0]}
-                    onChangeText={(text) =>
-                        handleInputChange('h', text)
-                    }
+                    onChangeText={(text) => handleInputChange('h', text)}
                     onBlur={() => handleBlur('h')}
                     style={styles.blockInput}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
                     maxLength={2}
                 />
 
@@ -113,7 +114,7 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('h', -1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▼</Text>
+                    <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
 
@@ -125,18 +126,17 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('m', 1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▲</Text>
+                    <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
 
                 <TextInput
                     placeholder="00"
+                    placeholderTextColor="#c7c7cc"
                     value={timeParts[1]}
-                    onChangeText={(text) =>
-                        handleInputChange('m', text)
-                    }
+                    onChangeText={(text) => handleInputChange('m', text)}
                     onBlur={() => handleBlur('m')}
                     style={styles.blockInput}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
                     maxLength={2}
                 />
 
@@ -144,7 +144,7 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('m', -1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▼</Text>
+                    <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
 
@@ -156,18 +156,17 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('s', 1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▲</Text>
+                    <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
 
                 <TextInput
                     placeholder="00"
+                    placeholderTextColor="#c7c7cc"
                     value={timeParts[2]}
-                    onChangeText={(text) =>
-                        handleInputChange('s', text)
-                    }
+                    onChangeText={(text) => handleInputChange('s', text)}
                     onBlur={() => handleBlur('s')}
                     style={styles.blockInput}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
                     maxLength={2}
                 />
 
@@ -175,7 +174,7 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
                     onPress={() => updateValue('s', -1)}
                     style={styles.arrowButton}
                 >
-                    <Text style={styles.arrowText}>▼</Text>
+                    <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
         </View>
@@ -187,50 +186,57 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-
         backgroundColor: '#f2f2f7',
         borderWidth: 1,
         borderColor: '#e5e5ea',
         borderRadius: 12,
-
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-
+        paddingVertical: 6,
+        paddingHorizontal: 8,
         width: '100%',
     },
-
     unitWrapper: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
+
 
     blockInput: {
         width: '100%',
-        height: 32,
-
-        fontSize: 18,
-        fontFamily: 'monospace',
+        height: 56,
+        fontSize: 20,
+        fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
         fontWeight: 'bold',
-
         color: '#1c1c1e',
         textAlign: 'center',
+
+        // 1. lineHeight는 OS별 버그를 유발하므로 과감히 제거합니다.
+        // lineHeight: 56, 
+
+        // 2. 내부 패딩을 0으로 만들어 기본 마진 간섭을 차단합니다.
+        paddingTop: 0,
+        paddingBottom: 0,
+        paddingHorizontal: 0,
+
+        // 3. 안드로이드 전용 폰트 패딩 제거 (필수)
+        includeFontPadding: false,
+
+        // 4. 입력창 내부 콘텐츠를 수직 중앙 정렬하는 네이티브 속성입니다.
+        textAlignVertical: 'center',
     },
+
 
     arrowButton: {
-        paddingVertical: 2,
-        paddingHorizontal: 8,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 4,
     },
-
-    arrowText: {
-        fontSize: 10,
-        color: '#8e8e93',
-    },
-
     colon: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#8e8e93',
-
-        paddingHorizontal: 4,
+        paddingHorizontal: 2,
+        bottom: Platform.OS === 'ios' ? 1 : 2,
     },
 });

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Modal,
     View,
     Text,
     TextInput,
     Pressable,
+    Keyboard,
     StyleSheet,
-} from 'react-native';
+    Platform,
 
-import { minutesToTime, timeToMinutes } from '../utils/timer';
+} from 'react-native';
+import Modal from 'react-native-modal';
 import { TimeBlockInput } from './TimeBlockInput';
+import { minutesToTime, timeToMinutes } from '../utils/timer';
 
 interface TimerSettingDialogProps {
     isOpen: boolean;
@@ -30,6 +32,27 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     const [endInput, setEndInput] = useState(initialEndTime);
     const [isDurationMode, setIsDurationMode] = useState(false);
     const [durationInput, setDurationInput] = useState('90');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    useEffect(() => {
+        if (!isOpen) return;
+
+        setKeyboardHeight(0);
+        // 키보드가 나타날 때 높이만큼 상태값 지정
+        const showSubscription = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => setKeyboardHeight(e.endCoordinates.height)
+        );
+        // 키보드가 사라질 때 0으로 초기화
+        const hideSubscription = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => setKeyboardHeight(0)
+        );
+
+        return () => {
+            showSubscription.remove();
+            hideSubscription.remove();
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (isOpen) {
@@ -55,90 +78,65 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
         onClose();
     };
 
+
     return (
         <Modal
-            visible={isOpen}
-            transparent
-            animationType="fade"
-            onRequestClose={onClose}
+            isVisible={isOpen}
+            onBackdropPress={() => {
+                Keyboard.dismiss();
+                onClose();
+            }}
+            onBackButtonPress={onClose}
+            avoidKeyboard={false} // 🚀 자동 계산을 끄고 수동으로 제어합니다.
+            animationIn="fadeIn"
+            animationOut="fadeOut"
+            backdropOpacity={0.4}
+            // 🚀 키보드가 켜지면 하단 여백을 주어 물리적으로 밀어 올립니다.
+            style={[
+                styles.modalCentered,
+                keyboardHeight > 0 && { justifyContent: 'flex-end', marginBottom: keyboardHeight + 20 }
+            ]}
         >
-            <View style={styles.overlay}>
-                <View style={styles.dialogBox}>
-                    <View style={styles.header}>
-                        <Text style={styles.title}>
-                            타이머 시간 설정
+            <View style={styles.dialogBox}>
+                <View style={styles.header}>
+                    <Text style={styles.title}>타이머 시간 설정</Text>
+                    <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
+                        <Text style={styles.toggleLabel}>
+                            {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
                         </Text>
+                    </Pressable>
+                </View>
 
-                        <Pressable
-                            onPress={() =>
-                                setIsDurationMode((prev) => !prev)
-                            }
-                        >
-                            <Text style={styles.toggleLabel}>
-                                {isDurationMode
-                                    ? '측정시간 설정 ON'
-                                    : '측정시간 설정 OFF'}
-                            </Text>
-                        </Pressable>
-                    </View>
+                <View style={styles.formGroup}>
+                    <Text style={styles.label}>시작 시간</Text>
+                    <TimeBlockInput value={startInput} onChange={setStartInput} />
+                </View>
 
+                {!isDurationMode ? (
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>
-                            시작 시간
-                        </Text>
-
-                        <TimeBlockInput
-                            value={startInput}
-                            onChange={setStartInput}
+                        <Text style={styles.label}>종료 시간</Text>
+                        <TimeBlockInput value={endInput} onChange={setEndInput} />
+                    </View>
+                ) : (
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>운영 시간 (분)</Text>
+                        <TextInput
+                            value={durationInput}
+                            onChangeText={setDurationInput}
+                            keyboardType="numeric"
+                            style={styles.input}
+                            placeholder="90"
                         />
                     </View>
+                )}
 
-                    {!isDurationMode ? (
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>
-                                종료 시간
-                            </Text>
-
-                            <TimeBlockInput
-                                value={endInput}
-                                onChange={setEndInput}
-                            />
-                        </View>
-                    ) : (
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>
-                                운영 시간 (분)
-                            </Text>
-
-                            <TextInput
-                                value={durationInput}
-                                onChangeText={setDurationInput}
-                                keyboardType="numeric"
-                                style={styles.input}
-                                placeholder="90"
-                            />
-                        </View>
-                    )}
-
-                    <View style={styles.buttonArea}>
-                        <Pressable
-                            style={styles.cancelButton}
-                            onPress={onClose}
-                        >
-                            <Text style={styles.cancelButtonText}>
-                                취소
-                            </Text>
-                        </Pressable>
-
-                        <Pressable
-                            style={styles.saveButton}
-                            onPress={handleSave}
-                        >
-                            <Text style={styles.saveButtonText}>
-                                적용
-                            </Text>
-                        </Pressable>
-                    </View>
+                <View style={styles.buttonArea}>
+                    <Pressable style={styles.cancelButton} onPress={onClose}>
+                        <Text style={styles.cancelButtonText}>취소</Text>
+                    </Pressable>
+                    <Pressable style={styles.saveButton} onPress={handleSave}>
+                        <Text style={styles.saveButtonText}>적용</Text>
+                    </Pressable>
                 </View>
             </View>
         </Modal>
@@ -153,17 +151,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
+    modalCentered: {
+        margin: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     dialogBox: {
-        width: 360,
-
+        width: '90%',
+        maxWidth: 360,
         backgroundColor: '#ffffff',
-
         borderRadius: 14,
-
         padding: 24,
     },
-
     header: {
         flexDirection: 'row',
 
