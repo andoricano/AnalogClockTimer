@@ -9,7 +9,6 @@ import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
 import { TimerSetting } from '../components/TimerSetting';
 import { TimerSettingDialog } from '../components/TimerSettingDialog';
-import Ionicons from "@expo/vector-icons/Ionicons";
 
 export const TimerScreen = () => {
     const {
