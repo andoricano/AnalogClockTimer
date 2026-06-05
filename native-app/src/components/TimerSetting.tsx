@@ -18,6 +18,8 @@ interface TimerSettingProps {
     onClickSetting: () => void;
 }
 
+
+
 export const TimerSetting: React.FC<TimerSettingProps> = ({
     startTime,
     endTime,
@@ -27,21 +29,34 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
     onClickStop,
     onClickSetting
 }) => {
-    const getButtonText = () => {
-        switch (timerStatus) {
-            case 'RUNNING':
-                return '중지하기';
-            case 'PAUSED':
-                return '재개하기';
-            case 'FINISHED':
-                return '다시하기';
-            case 'READY':
-            default:
-                return '시작하기';
-        }
+
+    // 원본 원자 액션 단위 정의
+    const actionConfig = {
+        START: { text: '시작하기', onPress: onClickStart, style: styles.startButton },
+        STOP: { text: '중지하기', onPress: onClickStop, style: styles.stopButton },
+        RESUME: { text: '이어하기', onPress: onClickStart, style: styles.startButton },
+        RESTART: { text: '다시하기', onPress: onClickStart, style: styles.startButton },
+        RESET: { text: '새로하기', onPress: onClickRefresh, style: styles.refreshButton },
     };
-    const isRunning = timerStatus === 'RUNNING';
-    const showRefresh = timerStatus === 'READY' || timerStatus === 'PAUSED';
+
+
+    const leftButtonConfig: Record<TimerStatus, { visible: boolean; action?: typeof actionConfig[keyof typeof actionConfig] }> = {
+        READY: { visible: false },
+        RUNNING: { visible: false },
+        PAUSED: { visible: true, action: actionConfig.RESET },   // 왼쪽: '새로하기' 노출
+        FINISHED: { visible: true, action: actionConfig.RESET }, // 왼쪽: '새로하기' 노출
+    };
+
+    const rightButtonConfig: Record<TimerStatus, typeof actionConfig[keyof typeof actionConfig]> = {
+        READY: actionConfig.START,
+        RUNNING: actionConfig.STOP,
+        PAUSED: actionConfig.RESUME,    // 오른쪽: '이어하기' 노출
+        FINISHED: actionConfig.RESTART,
+    };
+
+
+    const currentLeft = leftButtonConfig[timerStatus];
+    const currentRight = rightButtonConfig[timerStatus];
 
     return (
         <View style={styles.settingBox}>
@@ -64,28 +79,27 @@ export const TimerSetting: React.FC<TimerSettingProps> = ({
                 </Pressable>
             </View>
 
-            <View style={styles.buttonArea}>
 
-                {showRefresh && (
+            <View style={styles.buttonArea}>
+                {/* 좌측 버튼 영역 */}
+                {currentLeft.visible && currentLeft.action && (
                     <Pressable
-                        onPress={onClickRefresh}
-                        style={styles.refreshButton}
+                        onPress={currentLeft.action.onPress}
+                        style={[styles.actionButton, currentLeft.action.style]}
                     >
-                        <Text style={styles.refreshButtonText}>
-                            시계 초기화
+                        <Text style={styles.actionButtonText}>
+                            {currentLeft.action.text}
                         </Text>
                     </Pressable>
                 )}
 
+                {/* 우측 버튼 영역 */}
                 <Pressable
-                    onPress={isRunning ? onClickStop : onClickStart}
-                    style={[
-                        styles.actionButton,
-                        isRunning ? styles.stopButton : styles.startButton,
-                    ]}
+                    onPress={currentRight.onPress}
+                    style={[styles.actionButton, currentRight.style]}
                 >
                     <Text style={styles.actionButtonText}>
-                        {getButtonText()}
+                        {currentRight.text}
                     </Text>
                 </Pressable>
             </View>

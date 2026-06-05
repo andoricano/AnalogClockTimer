@@ -6,9 +6,15 @@ export type TimerStatus = 'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED';
 export const useTimer = () => {
     const [clockMode, setClockMode] = useState<boolean>(false);
     const [startTime, setStartTime] = useState<string>('09:00:00');
-    const [endTime, setEndTime] = useState<string>('10:20:00');
+    const [endTime, setEndTime] = useState<string>('09:00:10');
     const [timerStatus, setTimerStatus] = useState<TimerStatus>('READY');
     const [renderingTime, setRenderingTime] = useState<string>('09:00:00');
+
+    useEffect(() => {
+        if (timerStatus === 'READY') {
+            setRenderingTime(startTime);
+        }
+    }, [startTime, timerStatus]);
 
     useEffect(() => {
         if (clockMode) {
@@ -24,31 +30,33 @@ export const useTimer = () => {
             return;
         }
 
-        const targetSeconds = timeToSeconds(endTime);
         const startSeconds = timeToSeconds(startTime);
-        let effectiveTargetSeconds = targetSeconds;
+        let targetSeconds = timeToSeconds(endTime);
 
-        if (effectiveTargetSeconds < startSeconds) {
-            effectiveTargetSeconds += 86400;
+        if (targetSeconds < startSeconds) {
+            targetSeconds += 86400;
         }
 
         const intervalId = setInterval(() => {
-            setRenderingTime((prevTime) => {
-                let currentSeconds = timeToSeconds(prevTime);
-                const nextSeconds = currentSeconds + 1;
+            let currentSeconds = timeToSeconds(renderingTime);
 
-                if (nextSeconds >= effectiveTargetSeconds) {
-                    setTimerStatus('FINISHED');
-                    return endTime;
-                } else {
-                    return secondsToTime(nextSeconds);
-                }
-            });
+            if (currentSeconds < startSeconds) {
+                currentSeconds += 86400;
+            }
+
+            const nextSeconds = currentSeconds + 1;
+
+            if (nextSeconds >= targetSeconds) {
+                clearInterval(intervalId);
+                setRenderingTime(endTime);
+                setTimerStatus('FINISHED');
+            } else {
+                setRenderingTime(secondsToTime(nextSeconds % 86400));
+            }
         }, 1000);
 
         return () => clearInterval(intervalId);
-
-    }, [clockMode, timerStatus, startTime, endTime]);
+    }, [clockMode, timerStatus, startTime, endTime, renderingTime]);
 
     const start = () => {
         if (timerStatus === 'READY' || timerStatus === 'FINISHED') {
@@ -62,10 +70,8 @@ export const useTimer = () => {
     };
 
     const setRenderStartTime = () => {
-        if (timerStatus === 'READY' || timerStatus === 'PAUSED') {
-            setTimerStatus('READY');
-            setRenderingTime(startTime);
-        }
+        setTimerStatus('READY');
+        setRenderingTime(startTime);
     };
 
     const setTimeRange = (newStart: string, newEnd: string): boolean => {
