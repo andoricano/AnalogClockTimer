@@ -7,7 +7,7 @@ export type TimerStatus = 'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED';
 export const useTimer = () => {
     const [clockMode, setClockMode] = useState<boolean>(false);
     const [startTime, setStartTime] = useState<string>('09:00:00');
-    const [endTime, setEndTime] = useState<string>('09:00:10');
+    const [endTime, setEndTime] = useState<string>('10:20:00');
     const [timerStatus, setTimerStatus] = useState<TimerStatus>('READY');
     const [renderingTime, setRenderingTime] = useState<string>('09:00:00');
 

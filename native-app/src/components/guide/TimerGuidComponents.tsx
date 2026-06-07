@@ -3,29 +3,34 @@ import { View, Text, StyleSheet } from 'react-native';
 
 export const GuideText = () => (
     <View style={styles.card}>
-        <Text style={styles.title}>1단계: 타이머 안내</Text>
-        <Text style={styles.body}>시계를 터치하면 반응합니다.</Text>
+        <Text style={styles.title}>타이머 사용법</Text>
+        <Text style={styles.body}>시작하기를 누르면 시계만 남으며 타이머가 시작합니다.</Text>
     </View>
 );
 
-export const GuideImage = () => (
+
+export const GuideText1 = () => (
     <View style={styles.card}>
-        <Text style={styles.title}>2단계: 설정 안내</Text>
-        <View style={styles.imagePlaceholder}>
-            <Text style={styles.imageText}>[가이드 이미지 영역]</Text>
-        </View>
+        <Text style={styles.title}>타이머 사용법</Text>
+        <Text style={styles.body}>다시 시계를 누르면 타이머가 생깁니다.</Text>
     </View>
 );
 
-export const GuideTextImage = () => (
+
+export const GuideText2 = () => (
     <View style={styles.card}>
-        <Text style={styles.title}>3단계: 복합 가이드</Text>
-        <View style={styles.imagePlaceholder}>
-            <Text style={styles.imageText}>[가이드 이미지 영역]</Text>
-        </View>
-        <Text style={styles.body}>하단 버튼을 눌러 시작하세요.</Text>
+        <Text style={styles.title}>타이머 사용법</Text>
+        <Text style={styles.body}>편집 버튼을 누르면 시작 및 종료 시간을 정할 수 있습니다.</Text>
     </View>
 );
+
+// export const GuideText3 = () => (
+//     <View style={styles.card}>
+//         <Text style={styles.title}>설명서 다시 보기</Text>
+//         <Text style={styles.body}>설명서는 우측 상단 버튼을 누르시면 다시 보실 수 있습니다.</Text>
+//     </View>
+// );
+
 
 export interface GuideStep {
     step: number;
@@ -34,8 +39,9 @@ export interface GuideStep {
 
 export const TIMER_GUIDES: GuideStep[] = [
     { step: 1, renderContent: () => <GuideText /> },
-    { step: 2, renderContent: () => <GuideImage /> },
-    { step: 3, renderContent: () => <GuideTextImage /> },
+    { step: 2, renderContent: () => <GuideText1 /> },
+    { step: 3, renderContent: () => <GuideText2 /> },
+    // { step: 4, renderContent: () => <GuideText3 /> },
 ];
 
 const styles = StyleSheet.create({
