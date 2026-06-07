@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import {
     View,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
+    Text
 } from 'react-native';
 
 import { useTimer } from '../hooks/useTimer';
@@ -10,6 +11,8 @@ import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
 import { TimerSetting } from '../components/TimerSetting';
 import { TimerSettingDialog } from '../components/TimerSettingDialog';
+import { useTimerContext } from '../context/TimerContext';
+import { GuideOverlay } from '../components/guide/GuideOverlay';
 
 export const TimerScreen = () => {
     const {
@@ -27,6 +30,7 @@ export const TimerScreen = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isSettingVisible, setIsSettingVisible] = useState(true);
 
+    const { showTutorial, closeTutorial } = useTimerContext();
 
     // 1. clockMode 변경 시 처리
     useEffect(() => {
@@ -63,6 +67,7 @@ export const TimerScreen = () => {
     };
     return (
         <View style={styles.container}>
+            {showTutorial && <GuideOverlay onClose={closeTutorial} />}
             <View style={styles.mainContent}>
                 {/* 시계 클릭이 가능하도록 터치 영역으로 감싸기 */}
                 <TouchableOpacity
@@ -129,5 +134,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
 
         marginTop: 30,
-    },
+    }
 });
