@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationBar } from "expo-navigation-bar";
@@ -13,6 +13,7 @@ import { SettingScreen } from "./src/screens/SettingScreen";
 import { SetTimerScreen } from "./src/screens/SetTimerScreen";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { ClockScreen } from "./src/screens/ClockScreen";
+import { storage } from "./src/utils/storage/storage";
 
 const adUnitId = __DEV__ ? TestIds.BANNER : "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx";
 const Stack = createNativeStackNavigator();
@@ -46,13 +47,13 @@ function MainLayout() {
             headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
           }}
         >
-          <Stack.Screen 
-            name="Home" 
-            component={HomeScreen} 
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
             options={({ navigation }) => ({
               title: "시험장 타이머",
               headerRight: () => (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => navigation.navigate("Setting")}
                   style={styles.headerButton}
                 >

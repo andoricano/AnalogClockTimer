@@ -30,3 +30,27 @@ export const formatTimeFromDate = (date: Date): string => {
     const secs = date.getSeconds().toString().padStart(2, '0');
     return `${hrs}:${mins}:${secs}`;
 };
+
+// 총 시간을 계산해서 "X시간 Y분" 또는 "X분" 형태로 반환하는 함수
+export const calculateTotalExamMinutes = (timeline: { startTime: string; endTime: string }[]): string => {
+    let totalMinutes = 0;
+
+    timeline.forEach(({ startTime, endTime }) => {
+        let start = timeToMinutes(startTime);
+        let end = timeToMinutes(endTime);
+
+        if (end < start) {
+            end += 1440;
+        }
+
+        totalMinutes += (end - start);
+    });
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours > 0) {
+        return minutes > 0 ? `${hours}시간 ${minutes}분` : `${hours}시간`;
+    }
+    return `${totalMinutes}분`;
+};
