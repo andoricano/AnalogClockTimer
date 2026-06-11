@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationBar } from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
+import { Ionicons } from "@expo/vector-icons";
 
 import { TimerProvider, useTimerContext } from "./src/context/TimerContext";
 import { HomeScreen } from "./src/screens/HomeScreen";
@@ -20,7 +21,6 @@ function MainLayout() {
   const { isAdReady } = useTimerContext();
   const [currentScreen, setCurrentScreen] = useState("Home");
 
-  // TimerScreen일 때만 하단 광고 배너를 끕니다.
   const isTimerScreen = currentScreen === "Timer";
 
   return (
@@ -36,11 +36,34 @@ function MainLayout() {
           }
         }}
       >
-        <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: "홈" }} />
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={{
+            headerShown: true,
+            headerTitleAlign: "center",
+            headerShadowVisible: true,
+            headerStyle: { backgroundColor: "#fff" },
+            headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+          }}
+        >
+          <Stack.Screen 
+            name="Home" 
+            component={HomeScreen} 
+            options={({ navigation }) => ({
+              title: "시험장 타이머",
+              headerRight: () => (
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate("Setting")}
+                  style={styles.headerButton}
+                >
+                  <Ionicons name="settings-outline" size={24} color="#333" />
+                </TouchableOpacity>
+              ),
+            })}
+          />
           <Stack.Screen name="Setting" component={SettingScreen} options={{ title: "설정" }} />
           <Stack.Screen name="SetTimer" component={SetTimerScreen} options={{ title: "타이머 설정" }} />
-          <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동" }} />
+          <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동", headerShown: false }} />
           <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
         </Stack.Navigator>
       </NavigationContainer>
@@ -70,6 +93,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  headerButton: {
+    padding: 4,
   },
   adContainer: {
     alignItems: "center",
