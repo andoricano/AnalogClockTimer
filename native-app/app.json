@@ -7,28 +7,30 @@
     "icon": "./assets/analog_clock_icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.andoricano.analogcolcktimer"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.andoricano.nativeapp"
+      "package": "com.andoricano.analogcolcktimer"
     },
     "plugins": [
+      "expo-status-bar",
+      "expo-navigation-bar",
       [
-        "expo-status-bar",
+        "react-native-google-mobile-ads",
         {
-          "hidden": true
-        }
-      ],
-      [
-        "expo-navigation-bar",
-        {
-          "hidden": true
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ]
     ]
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }

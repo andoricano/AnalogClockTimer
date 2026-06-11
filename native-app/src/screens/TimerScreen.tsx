@@ -3,8 +3,8 @@ import {
     View,
     StyleSheet,
     TouchableOpacity,
-    Text
 } from 'react-native';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
 import { useTimer } from '../hooks/useTimer';
 
@@ -65,9 +65,12 @@ export const TimerScreen = () => {
             seconds: s * 6,
         };
     };
+
     return (
         <View style={styles.container}>
             {showTutorial && <GuideOverlay onClose={closeTutorial} />}
+            
+            {/* 메인 타이머 및 설정 영역 */}
             <View style={styles.mainContent}>
                 {/* 시계 클릭이 가능하도록 터치 영역으로 감싸기 */}
                 <TouchableOpacity
@@ -95,6 +98,14 @@ export const TimerScreen = () => {
                         onClickSetting={() => setIsDialogOpen(true)}
                     />
                 </View>
+            </View>
+
+            {/* 화면 최하단 고정 배너 광고 */}
+            <View style={styles.bannerContainer}>
+                <BannerAd
+                    unitId={TestIds.BANNER}
+                    size={BannerAdSize.ADAPTIVE_BANNER}
+                />
             </View>
 
             <TimerSettingDialog
@@ -134,5 +145,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
 
         marginTop: 30,
+    },
+
+    bannerContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5', // 배경색 일치
+        paddingBottom: 10, // 기기 하단 여백 확보
     }
 });
