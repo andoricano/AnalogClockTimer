@@ -12,7 +12,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     const [examList, setExamList] = useState<ExamTimerItem[]>([]);
 
     useEffect(() => {
-        // HomeScreen 진입 시 헤더 왼쪽 버튼을 동적으로 설정
         navigation.setOptions({
             headerLeft: () => (
                 <TouchableOpacity
@@ -40,8 +39,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {/* 상단 버튼 영역 제거 (헤더로 이동했으므로) */}
-
             <TestScheduleList
                 data={examList} 
                 onPressItem={handlePressItem} 

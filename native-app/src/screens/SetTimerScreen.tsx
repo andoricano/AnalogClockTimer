@@ -29,7 +29,7 @@ export const SetTimerScreen = () => {
     const [activeId, setActiveId] = useState<string | undefined>(id);
     const [isAddMode, setIsAddMode] = useState<boolean>(add ?? true);
 
-    
+
     const scrollViewRef = useRef<ScrollView>(null);
 
     useEffect(() => {
@@ -170,7 +170,7 @@ export const SetTimerScreen = () => {
                         style={[styles.actionButton, styles.startButton]}
                         onPress={() => navigation.navigate('Timer', { id: activeId })}
                     >
-                        <Text style={styles.buttonText}>타이머 시작</Text>
+                        <Text style={styles.buttonText}>타이머 준비 완료</Text>
                     </TouchableOpacity>
                 </View>
             )}

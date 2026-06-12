@@ -13,14 +13,15 @@ import { SettingScreen } from "./src/screens/SettingScreen";
 import { SetTimerScreen } from "./src/screens/SetTimerScreen";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { ClockScreen } from "./src/screens/ClockScreen";
-import { storage } from "./src/utils/storage/storage";
+import { RootStackParamList } from "./src/types/navigation"; 
 
 const adUnitId = __DEV__ ? TestIds.BANNER : "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx";
-const Stack = createNativeStackNavigator();
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function MainLayout() {
   const { isAdReady } = useTimerContext();
-  const [currentScreen, setCurrentScreen] = useState("Home");
+  const [currentScreen, setCurrentScreen] = useState<keyof RootStackParamList>("Home");
 
   const isTimerScreen = currentScreen === "Timer";
 
@@ -33,7 +34,7 @@ function MainLayout() {
         onStateChange={(state) => {
           const currentRoute = state?.routes[state.index];
           if (currentRoute) {
-            setCurrentScreen(currentRoute.name);
+            setCurrentScreen(currentRoute.name as keyof RootStackParamList);
           }
         }}
       >
@@ -64,7 +65,7 @@ function MainLayout() {
           />
           <Stack.Screen name="Setting" component={SettingScreen} options={{ title: "설정" }} />
           <Stack.Screen name="SetTimer" component={SetTimerScreen} options={{ title: "타이머 설정" }} />
-          <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동", headerShown: false }} />
+          <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동" }} />
           <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
         </Stack.Navigator>
       </NavigationContainer>

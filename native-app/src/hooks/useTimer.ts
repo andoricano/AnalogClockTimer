@@ -1,30 +1,42 @@
 import { useState, useEffect } from 'react';
 import { timeToSeconds, secondsToTime, formatTimeFromDate } from '../utils/timer';
-import { timerStorage } from '../utils/storage/timeStorage';
+import { TimelineItem } from '../utils/storage/testStorage';
 
 export type TimerStatus = 'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED';
 
 export const useTimer = () => {
     const [clockMode, setClockMode] = useState<boolean>(false);
+    const [timerStatus, setTimerStatus] = useState<TimerStatus>('READY');
+    
+    const [timeline, setTimeline] = useState<TimelineItem[]>([]);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+
+    const [currentSubject, setCurrentSubject] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('09:00:00');
     const [endTime, setEndTime] = useState<string>('10:20:00');
-    const [timerStatus, setTimerStatus] = useState<TimerStatus>('READY');
     const [renderingTime, setRenderingTime] = useState<string>('09:00:00');
 
-    useEffect(() => {
-        const load = async () => {
-            const start = await timerStorage.getStartTime();
-            const end = await timerStorage.getEndTime();
+    const ensureSecondsFormat = (timeStr: string): string => {
+        if (!timeStr) return '00:00:00';
+        return timeStr.split(':').length === 2 ? `${timeStr}:00` : timeStr;
+    };
 
-            console.log("LOAD", start, end);
+    const initScheduleTimeline = (items: TimelineItem[], startIndex: number = 0) => {
+        if (!items || items.length === 0) return;
 
-            if (start) setStartTime(start);
-            if (end) setEndTime(end);
-        };
+        setTimeline(items);
+        setCurrentIndex(startIndex);
 
-        load();
-    }, []);
+        const currentItem = items[startIndex];
+        const formattedStart = ensureSecondsFormat(currentItem.startTime);
+        const formattedEnd = ensureSecondsFormat(currentItem.endTime);
 
+        setCurrentSubject(currentItem.subject);
+        setStartTime(formattedStart);
+        setEndTime(formattedEnd);
+        setRenderingTime(formattedStart);
+        setTimerStatus('READY');
+    };
 
     useEffect(() => {
         if (timerStatus === 'READY') {
@@ -65,14 +77,19 @@ export const useTimer = () => {
             if (nextSeconds >= targetSeconds) {
                 clearInterval(intervalId);
                 setRenderingTime(endTime);
-                setTimerStatus('FINISHED');
+
+                if (currentIndex < timeline.length - 1) {
+                    initScheduleTimeline(timeline, currentIndex + 1);
+                } else {
+                    setTimerStatus('FINISHED');
+                }
             } else {
                 setRenderingTime(secondsToTime(nextSeconds % 86400));
             }
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [clockMode, timerStatus, startTime, endTime, renderingTime]);
+    }, [clockMode, timerStatus, startTime, endTime, renderingTime, timeline, currentIndex]);
 
     const start = () => {
         if (timerStatus === 'READY' || timerStatus === 'FINISHED') {
@@ -90,37 +107,36 @@ export const useTimer = () => {
         setRenderingTime(startTime);
     };
 
-
-    const setTimeRange = (newStart: string, newEnd: string): boolean => {
-        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    const setManualTimeRange = (newStart: string, newEnd: string): boolean => {
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
         if (!timeRegex.test(newStart) || !timeRegex.test(newEnd)) {
             return false;
         }
 
-        setStartTime(newStart);
-        setEndTime(newEnd);
+        const formattedStart = ensureSecondsFormat(newStart);
+        const formattedEnd = ensureSecondsFormat(newEnd);
 
-        void timerStorage.setStartTime(newStart);
-        void timerStorage.setEndTime(newEnd);
-
-        console.log("SAVE", newStart, newEnd);
+        setStartTime(formattedStart);
+        setEndTime(formattedEnd);
+        setRenderingTime(formattedStart);
         return true;
     };
-
-
 
     return {
         clockMode,
         setClockMode,
+        timeline,
+        currentIndex,
+        currentSubject,
         startTime,
         endTime,
-        setTimeRange,
         timerStatus,
-        setTimerStatus,
         renderingTime,
+        initScheduleTimeline,
+        setManualTimeRange,
         setRenderStartTime,
         start,
-        stop
+        stop,
     };
 };
