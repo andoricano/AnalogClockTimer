@@ -1,11 +1,6 @@
+import { TimelineItem } from "../../components/schedule/TestScheduleItemRow";
 import { storage } from "./storage";
 
-// 1. 타임라인 및 시험 스케줄 구조 정의 (타입 안전성 확보)
-export interface TimelineItem {
-    subject: string;      // 과목명 (예: "국어")
-    startTime: string;    // 시작 시간 (예: "09:00")
-    endTime: string;      // 종료 시간 (예: "10:20")
-}
 
 export interface ExamTimer {
     id: string;           // 고유 ID (수정, 삭제, Key값 매핑용)

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { testStorage } from '../utils/storage/testStorage';
-import { ExamTimerItem, TestScheduleList } from '../components/TestScheduleList';
-import { Ionicons } from '@expo/vector-icons'; // 아이콘 라이브러리 사용 시
+import { Ionicons } from '@expo/vector-icons';
+import { ExamTimerItem } from '../components/schedule/TestScheduleItemRow';
+import { TestScheduleList } from '../components/schedule/TestScheduleList';
 
 interface HomeScreenProps {
     navigation: any;
@@ -10,6 +11,17 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     const [examList, setExamList] = useState<ExamTimerItem[]>([]);
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
+
+    const loadData = async () => {
+        const list = await testStorage.getExamList();
+        setExamList(list as ExamTimerItem[]);
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', loadData);
+        return unsubscribe;
+    }, [navigation]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -21,34 +33,50 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     <Ionicons name="time-outline" size={24} color="#333" />
                 </TouchableOpacity>
             ),
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => setIsEditMode(!isEditMode)}
+                    style={styles.headerRightButton}
+                >
+                    <Text style={[styles.headerRightButtonText, isEditMode && styles.activeEditText]}>
+                        {isEditMode ? '완료' : '편집'}
+                    </Text>
+                </TouchableOpacity>
+            ),
         });
-
-        const loadData = async () => {
-            const list = await testStorage.getExamList();
-            setExamList(list as ExamTimerItem[]);
-        };
-        
-        const unsubscribe = navigation.addListener('focus', loadData);
-        return unsubscribe;
-    }, [navigation]);
+    }, [navigation, isEditMode]);
 
     const handlePressItem = (item: ExamTimerItem) => {
-        console.log("선택된 타이머:", item.title);
         navigation.navigate('SetTimer', { id: item.id, add: false });
+    };
+
+    const handleUpdateOrder = async (nextList: ExamTimerItem[]) => {
+        setExamList(nextList);
+        await testStorage.setExamList(nextList);
+    };
+
+    const handleDeleteItem = async (id: string) => {
+        await testStorage.deleteExam(id);
+        await loadData();
     };
 
     return (
         <View style={styles.container}>
             <TestScheduleList
                 data={examList} 
-                onPressItem={handlePressItem} 
+                onPressItem={handlePressItem}
+                isEditMode={isEditMode}
+                onUpdateOrder={handleUpdateOrder}
+                onDeleteItem={handleDeleteItem}
             />
 
-            <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SetTimer', { add: true })}>
-                    <Text style={styles.buttonText}>타이머 추가하기</Text>
-                </TouchableOpacity>
-            </View>
+            {!isEditMode && (
+                <View style={styles.bottomContainer}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SetTimer', { add: true })}>
+                        <Text style={styles.buttonText}>타이머 추가하기</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 };
@@ -58,7 +86,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
-    // 기존 topContainer 제거
     bottomContainer: {
         paddingHorizontal: 20,
         paddingBottom: 20,
@@ -78,5 +105,16 @@ const styles = StyleSheet.create({
     },
     headerLeftButton: {
         marginLeft: 16,
+    },
+    headerRightButton: {
+        marginRight: 16,
+    },
+    headerRightButtonText: {
+        fontSize: 16,
+        color: '#007AFF',
+        fontWeight: '600',
+    },
+    activeEditText: {
+        color: '#34C759',
     },
 });

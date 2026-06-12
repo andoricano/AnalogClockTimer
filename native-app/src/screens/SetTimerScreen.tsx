@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { testStorage, ExamTimer, TimelineItem } from '../utils/storage/testStorage';
+import { testStorage, ExamTimer,  } from '../utils/storage/testStorage';
 import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { TimelineList } from '../components/timeline/TimelineList';
+import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
 
 interface RouteParams {
     add?: boolean;

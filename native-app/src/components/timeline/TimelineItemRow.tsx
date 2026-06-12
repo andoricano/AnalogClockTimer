@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RenderItemParams } from 'react-native-draggable-flatlist';
-import { TimelineItem } from '../TestScheduleList';
+import { TimelineItem } from '../schedule/TestScheduleItemRow';
 
 export interface DraggedTimelineItem extends TimelineItem {
     id: string;

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { TimelineItemRow, DraggedTimelineItem } from './TimelineItemRow';
-import { TimelineItem } from '../TestScheduleList';
+import { TimelineItem } from '../schedule/TestScheduleItemRow';
 
 interface ListProps {
     data: TimelineItem[];
