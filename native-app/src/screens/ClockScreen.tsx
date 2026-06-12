@@ -100,14 +100,6 @@ export const ClockScreen = () => {
                 </View>
             </View>
 
-            {/* 화면 최하단 고정 배너 광고 */}
-            <View style={styles.bannerContainer}>
-                <BannerAd
-                    unitId={TestIds.BANNER}
-                    size={BannerAdSize.ADAPTIVE_BANNER}
-                />
-            </View>
-
             <TimerSettingDialog
                 isOpen={isDialogOpen}
                 initialStartTime={startTime}
