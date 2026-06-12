@@ -8,51 +8,50 @@ import {
     StyleSheet,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import { TimeBlockInput } from './TimeBlockInput';
-import { minutesToTime, timeToMinutes } from '../utils/timer';
+import { TimeBlockInput } from '../TimeBlockInput';
+import { minutesToTime, timeToMinutes } from '../../utils/timer';
 
 interface TimerSettingDialogProps {
     isOpen: boolean;
+    initialSubject?: string;
     initialStartTime: string;
     initialEndTime: string;
     onClose: () => void;
-    onSave: (startTime: string, endTime: string) => void;
+    onSave: (subject: string, startTime: string, endTime: string) => void;
 }
 
 export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     isOpen,
+    initialSubject = '',
     initialStartTime,
     initialEndTime,
     onClose,
     onSave,
 }) => {
+    const [subjectInput, setSubjectInput] = useState(initialSubject);
     const [startInput, setStartInput] = useState(initialStartTime);
     const [endInput, setEndInput] = useState(initialEndTime);
     const [isDurationMode, setIsDurationMode] = useState(false);
     const [durationInput, setDurationInput] = useState('90');
 
-    // 💡 오직 모달이 열릴 때만 초기 데이터를 주입하도록 격리 (부모 리렌더링 방어)
     useEffect(() => {
         if (isOpen) {
+            setSubjectInput(initialSubject);
             setStartInput(initialStartTime);
             setEndInput(initialEndTime);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const handleSave = () => {
-        // 💡 [UX 핵심] 버튼 누르자마자 부모 데이터를 즉시 바꿉니다.
+        let calculatedEndTime = endInput;
+
         if (isDurationMode) {
             const startMinutes = timeToMinutes(startInput);
             const calculatedEndMinutes = startMinutes + Number(durationInput);
-            const calculatedEndTime = minutesToTime(calculatedEndMinutes);
-
-            onSave(startInput, calculatedEndTime);
-        } else {
-            onSave(startInput, endInput);
+            calculatedEndTime = minutesToTime(calculatedEndMinutes);
         }
 
-        // 데이터 반영 후 바로 닫기 요청
+        onSave(subjectInput.trim() || '무제 과목', startInput, calculatedEndTime);
         onClose();
     };
 
@@ -66,12 +65,10 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
             onBackButtonPress={onClose}
             avoidKeyboard={true}
             style={styles.modalCentered}
-
             useNativeDriver={true}
             hideModalContentWhileAnimating={true}
             animationIn="fadeIn"
             animationOut="fadeOut"
-
             animationInTiming={0}
             animationOutTiming={0}
             backdropTransitionInTiming={0}
@@ -79,12 +76,22 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
         >
             <View style={styles.dialogBox}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>타이머 시간 설정</Text>
+                    <Text style={styles.title}>과목 시간 추가</Text>
                     <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
                         <Text style={styles.toggleLabel}>
                             {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
                         </Text>
                     </Pressable>
+                </View>
+
+                <View style={styles.formGroup}>
+                    <Text style={styles.label}>과목명</Text>
+                    <TextInput
+                        value={subjectInput}
+                        onChangeText={setSubjectInput}
+                        style={styles.input}
+                        placeholder="예: 국어"
+                    />
                 </View>
 
                 <View style={styles.formGroup}>
@@ -123,116 +130,74 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     );
 };
 
-
 const styles = StyleSheet.create({
     modalCentered: {
-        margin: 0,
         justifyContent: 'center',
         alignItems: 'center',
+        margin: 0,
     },
     dialogBox: {
-        width: '90%',
-        maxWidth: 360,
-        backgroundColor: '#ffffff',
+        width: '85%',
+        backgroundColor: '#fff',
         borderRadius: 14,
-        padding: 24,
+        padding: 20,
     },
     header: {
         flexDirection: 'row',
-
         alignItems: 'center',
-        justifyContent: 'space-between',
-
-        borderBottomWidth: 1,
-        borderBottomColor: '#e5e5ea',
-
-        paddingBottom: 12,
+        marginBottom: 16,
     },
-
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#1c1c1e',
+        color: '#333',
     },
-
     toggleLabel: {
         fontSize: 12,
-        color: '#007aff',
-        fontWeight: 'bold',
-    },
-
-    formGroup: {
-        marginTop: 20,
-    },
-
-    label: {
-        fontSize: 13,
+        color: '#007AFF',
         fontWeight: '600',
-        color: '#8e8e93',
-
+    },
+    formGroup: {
+        marginBottom: 14,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#666',
         marginBottom: 6,
     },
-
     input: {
-        height: 40,
-
         borderWidth: 1,
         borderColor: '#e5e5ea',
-
         borderRadius: 8,
-
         paddingHorizontal: 12,
-
-        backgroundColor: '#f2f2f7',
-
+        height: 44,
         fontSize: 16,
+        color: '#333',
     },
-
     buttonArea: {
         flexDirection: 'row',
-
-        marginTop: 24,
+        justifyContent: 'flex-end',
+        marginTop: 10,
     },
-
     cancelButton: {
-        flex: 1,
-
-        height: 44,
-
-        borderRadius: 8,
-
-        backgroundColor: '#e5e5ea',
-
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        marginRight: 5,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        marginRight: 8,
     },
-
-    saveButton: {
-        flex: 1,
-
-        height: 44,
-
-        borderRadius: 8,
-
-        backgroundColor: '#007aff',
-
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        marginLeft: 5,
-    },
-
     cancelButtonText: {
-        color: '#1c1c1e',
-        fontWeight: 'bold',
-        fontSize: 15,
+        color: '#8e8e93',
+        fontSize: 16,
     },
-
+    saveButton: {
+        backgroundColor: '#007AFF',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
     saveButtonText: {
-        color: '#ffffff',
+        color: '#fff',
+        fontSize: 16,
         fontWeight: 'bold',
-        fontSize: 15,
     },
 });

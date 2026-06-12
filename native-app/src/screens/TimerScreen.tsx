@@ -10,7 +10,7 @@ import { useTimer } from '../hooks/useTimer';
 
 import { AnalogClock } from '../components/AnalogClock';
 import { TimerSetting } from '../components/TimerSetting';
-import { TimerSettingDialog } from '../components/TimerSettingDialog';
+import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { useTimerContext } from '../context/TimerContext';
 import { GuideOverlay } from '../components/guide/GuideOverlay';
 
@@ -98,14 +98,6 @@ export const TimerScreen = () => {
                         onClickSetting={() => setIsDialogOpen(true)}
                     />
                 </View>
-            </View>
-
-            {/* 화면 최하단 고정 배너 광고 */}
-            <View style={styles.bannerContainer}>
-                <BannerAd
-                    unitId={TestIds.BANNER}
-                    size={BannerAdSize.ADAPTIVE_BANNER}
-                />
             </View>
 
             <TimerSettingDialog

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -8,12 +8,13 @@ import {
     ScrollView,
     Alert,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native'; 
-import { testStorage, ExamTimer, TimelineItem } from '../utils/storage/testStorage'; 
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { testStorage, ExamTimer, TimelineItem } from '../utils/storage/testStorage';
+import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 
 interface RouteParams {
     add?: boolean;
-    id?: string; 
+    id?: string;
 }
 
 export const SetTimerScreen = () => {
@@ -21,11 +22,16 @@ export const SetTimerScreen = () => {
     const navigation = useNavigation<any>();
     const { add, id } = (route.params as RouteParams) || { add: true, id: undefined };
 
-    // --- State 관리 ---
     const [title, setTitle] = useState<string>('');
     const [timeline, setTimeline] = useState<TimelineItem[]>([]);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    // --- 1. Read (기존 데이터 불러오기) ---
+    const [activeId, setActiveId] = useState<string | undefined>(id);
+    const [isAddMode, setIsAddMode] = useState<boolean>(add ?? true);
+
+    
+    const scrollViewRef = useRef<ScrollView>(null);
+
     useEffect(() => {
         if (!add && id) {
             const loadTargetExam = async () => {
@@ -40,67 +46,41 @@ export const SetTimerScreen = () => {
         }
     }, [add, id]);
 
-    // --- 타임라인 동적 행 추가/삭제 핸들러 ---
-    const handleAddTimelineRow = () => {
-        setTimeline([...timeline, { subject: '', startTime: '09:00', endTime: '10:00' }]);
-    };
+    const saveData = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
+        const finalTitle = updatedTitle.trim() || '새로운 타이머';
 
-    const handleRemoveTimelineRow = (index: number) => {
-        setTimeline(timeline.filter((_, i) => i !== index));
-    };
-
-    const handleUpdateTimelineField = (index: number, field: keyof TimelineItem, value: string) => {
-        const updated = [...timeline];
-        updated[index] = { ...updated[index], [field]: value };
-        setTimeline(updated);
-    };
-
-    // --- 2. Create & Update (저장 및 수정 처리) ---
-    const handleSave = async () => {
-        if (!title.trim()) {
-            Alert.alert("알림", "타이머 제목을 입력해주세요.");
-            return;
-        }
-
-        if (timeline.length === 0) {
-            Alert.alert("알림", "최소 하나의 시험 시간축을 추가해주세요.");
-            return;
-        }
-
-        if (add) {
-            // Create 모드
+        if (isAddMode && !activeId) {
+            const newId = String(Date.now());
             const newExam: ExamTimer = {
-                id: String(Date.now()), // 고유 식별자 생성
-                title: title.trim(),
-                timeline,
+                id: newId,
+                title: finalTitle,
+                timeline: updatedTimeline,
             };
             await testStorage.addExam(newExam);
-        } else if (id) {
-            // Update 모드
+            setActiveId(newId);
+            setIsAddMode(false);
+        } else if (activeId) {
             const currentList = await testStorage.getExamList();
-            const updatedList = currentList.map(exam => 
-                exam.id === id ? { ...exam, title: title.trim(), timeline } : exam
+            const updatedList = currentList.map(exam =>
+                exam.id === activeId ? { ...exam, title: finalTitle, timeline: updatedTimeline } : exam
             );
             await testStorage.setExamList(updatedList);
         }
-
-        navigation.goBack();
     };
 
-    // --- 3. Delete (삭제 처리) ---
     const handleDelete = () => {
-        if (!id) return;
+        if (!activeId) return;
 
         Alert.alert(
             "타이머 삭제",
             "정말로 이 타이머를 삭제하시겠습니까?",
             [
                 { text: "취소", style: "cancel" },
-                { 
-                    text: "삭제", 
+                {
+                    text: "삭제",
                     style: "destructive",
                     onPress: async () => {
-                        await testStorage.deleteExam(id);
+                        await testStorage.deleteExam(activeId);
                         navigation.goBack();
                     }
                 }
@@ -108,49 +88,75 @@ export const SetTimerScreen = () => {
         );
     };
 
+    useEffect(() => {
+        if (!isAddMode && activeId) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <TouchableOpacity onPress={handleDelete} style={styles.headerDeleteButton}>
+                        <Text style={styles.headerDeleteButtonText}>삭제</Text>
+                    </TouchableOpacity>
+                ),
+            });
+        } else {
+            navigation.setOptions({
+                headerRight: null,
+            });
+        }
+    }, [navigation, isAddMode, activeId]);
+
+    const handleSaveTimelineItem = async (subject: string, startTime: string, endTime: string) => {
+        const updatedTimeline = [...timeline, { subject, startTime, endTime }];
+        setTimeline(updatedTimeline);
+        await saveData(title, updatedTimeline);
+
+        setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 50);
+    };
+
+    const handleRemoveTimelineRow = async (index: number) => {
+        const updatedTimeline = timeline.filter((_, i) => i !== index);
+        setTimeline(updatedTimeline);
+        await saveData(title, updatedTimeline);
+    };
+
+    const handleTitleBlur = async () => {
+        if (timeline.length > 0) {
+            await saveData(title, timeline);
+        }
+    };
+
     return (
         <View style={styles.container}>
-            <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
-                {/* 대제목 입력 창 */}
-                <Text style={styles.label}>타이머 대제목</Text>
+            <View style={styles.top}>
+                <Text style={styles.label}>타이머 제목</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="예: 국가직 9급 공무원 시험"
                     value={title}
                     onChangeText={setTitle}
+                    onBlur={handleTitleBlur}
                 />
 
-                {/* 세부 시간축 설정 */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.label}>시험 시간축 설정</Text>
-                    <TouchableOpacity style={styles.rowAddButton} onPress={handleAddTimelineRow}>
-                        <Text style={styles.rowAddButtonText}>+ 과목 추가</Text>
+                    <Text style={styles.label}>시험 시간표 설정</Text>
+                    <TouchableOpacity style={styles.rowAddButton} onPress={() => setIsDialogOpen(true)}>
+                        <Text style={styles.rowAddButtonText}>+ 시간 추가</Text>
                     </TouchableOpacity>
                 </View>
+            </View>
 
+            <ScrollView
+                ref={scrollViewRef}
+                style={styles.scrollContainer}
+                contentContainerStyle={styles.scrollContent}
+            >
                 {timeline.map((item, index) => (
                     <View key={index} style={styles.timelineRow}>
-                        <TextInput
-                            style={[styles.rowInput, { flex: 2 }]}
-                            placeholder="과목명"
-                            value={item.subject}
-                            onChangeText={(val) => handleUpdateTimelineField(index, 'subject', val)}
-                        />
-                        <TextInput
-                            style={[styles.rowInput, { flex: 1.2 }]}
-                            placeholder="09:00"
-                            maxLength={5}
-                            value={item.startTime}
-                            onChangeText={(val) => handleUpdateTimelineField(index, 'startTime', val)}
-                        />
-                        <Text style={styles.tilde}>~</Text>
-                        <TextInput
-                            style={[styles.rowInput, { flex: 1.2 }]}
-                            placeholder="10:20"
-                            maxLength={5}
-                            value={item.endTime}
-                            onChangeText={(val) => handleUpdateTimelineField(index, 'endTime', val)}
-                        />
+                        <View style={styles.rowTextContainer}>
+                            <Text style={styles.subjectText}>{item.subject}</Text>
+                            <Text style={styles.timeText}>{item.startTime} ~ {item.endTime}</Text>
+                        </View>
                         <TouchableOpacity style={styles.rowDeleteButton} onPress={() => handleRemoveTimelineRow(index)}>
                             <Text style={styles.rowDeleteButtonText}>삭제</Text>
                         </TouchableOpacity>
@@ -158,25 +164,24 @@ export const SetTimerScreen = () => {
                 ))}
             </ScrollView>
 
-            {/* 하단 기능 버튼 제어 영역 */}
-            <View style={styles.buttonContainer}>
-                {/* 수정 모드일 때만 하단에 삭제 및 시작 분기 버튼 제공 */}
-                {!add && (
-                    <View style={styles.subButtonRow}>
-                        <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
-                            <Text style={styles.buttonText}>삭제하기</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.actionButton, styles.startButton]} onPress={() => navigation.navigate('Timer', { id })}>
-                            <Text style={styles.buttonText}>타이머 시작</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-                
-                {/* 저장/수정 완료 버튼 */}
-                <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSave}>
-                    <Text style={styles.buttonText}>{add ? "타이머 생성하기" : "변경사항 저장하기"}</Text>
-                </TouchableOpacity>
-            </View>
+            {!isAddMode && activeId && (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.startButton]}
+                        onPress={() => navigation.navigate('Timer', { id: activeId })}
+                    >
+                        <Text style={styles.buttonText}>타이머 시작</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            <TimerSettingDialog
+                isOpen={isDialogOpen}
+                initialStartTime="09:00"
+                initialEndTime="10:00"
+                onClose={() => setIsDialogOpen(false)}
+                onSave={handleSaveTimelineItem}
+            />
         </View>
     );
 };
@@ -186,11 +191,17 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
+    top: {
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        backgroundColor: '#f5f5f5',
+    },
     scrollContainer: {
         flex: 1,
     },
     scrollContent: {
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
     },
     label: {
         fontSize: 16,
@@ -200,12 +211,12 @@ const styles = StyleSheet.create({
     },
     input: {
         backgroundColor: '#fff',
-        height: 48,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        fontSize: 15,
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#e5e5ea',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        height: 50,
+        fontSize: 16,
         marginBottom: 24,
     },
     sectionHeader: {
@@ -227,69 +238,65 @@ const styles = StyleSheet.create({
     },
     timelineRow: {
         flexDirection: 'row',
-        alignItems: 'center',
         backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
+        padding: 16,
         marginBottom: 10,
+        alignItems: 'center',
+        justifyContent: 'space-between',
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#e5e5ea',
     },
-    rowInput: {
-        height: 40,
-        borderWidth: 1,
-        borderColor: '#eee',
-        borderRadius: 6,
-        paddingHorizontal: 8,
-        fontSize: 14,
-        marginHorizontal: 2,
-        textAlign: 'center',
+    rowTextContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
-    tilde: {
+    subjectText: {
         fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        width: '40%',
+    },
+    timeText: {
+        fontSize: 15,
         color: '#666',
-        marginHorizontal: 2,
     },
     rowDeleteButton: {
-        paddingHorizontal: 8,
-        justifyContent: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
     },
     rowDeleteButtonText: {
         color: '#FF3B30',
         fontSize: 14,
+        fontWeight: '600',
     },
     buttonContainer: {
         paddingHorizontal: 20,
         paddingBottom: 24,
         backgroundColor: '#f5f5f5',
     },
-    subButtonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
     actionButton: {
-        height: 52,
+        height: 54,
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 1,
-    },
-    saveButton: {
-        width: '100%',
-        backgroundColor: '#007AFF',
-    },
-    deleteButton: {
-        width: '48%',
-        backgroundColor: '#FF3B30',
     },
     startButton: {
-        width: '48%',
-        backgroundColor: '#4CD964',
+        width: '100%',
+        backgroundColor: '#34C759',
     },
     buttonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    headerDeleteButton: {
+        marginRight: 16,
+    },
+    headerDeleteButtonText: {
+        color: '#FF3B30',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });
