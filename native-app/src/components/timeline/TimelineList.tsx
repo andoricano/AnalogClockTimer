@@ -1,16 +1,23 @@
 import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { TimelineItemRow, DraggedTimelineItem } from './TimelineItemRow';
-import { TimelineItem } from '../schedule/TestScheduleItemRow';
+
+import { TimerSetMode } from '../../types/navigation';
+import { TimelineItemRow, DraggedTimelineItem, TimelineSetItem } from './TimelineItemRow';
 
 interface ListProps {
-    data: TimelineItem[];
-    setData: (data: TimelineItem[]) => void;
+    mode: TimerSetMode;
+    data: TimelineSetItem[];
+    setData: (data: TimelineSetItem[]) => void;
     onRemove: (index: number) => void;
 }
 
-export const TimelineList = ({ data, setData, onRemove }: ListProps) => {
+export const TimelineList = ({
+    mode,
+    data,
+    setData,
+    onRemove,
+}: ListProps) => {
     const wrappedData = useMemo<DraggedTimelineItem[]>(() => {
         return data.map((item, index) => ({
             ...item,
@@ -19,7 +26,9 @@ export const TimelineList = ({ data, setData, onRemove }: ListProps) => {
     }, [data]);
 
     const handleDragEnd = (nextDraggedData: DraggedTimelineItem[]) => {
-        const unwrappedData: TimelineItem[] = nextDraggedData.map(({ id, ...pureItem }) => pureItem);
+        const unwrappedData: TimelineSetItem[] =
+            nextDraggedData.map(({ id, ...pureItem }) => pureItem);
+
         setData(unwrappedData);
     };
 
@@ -27,10 +36,16 @@ export const TimelineList = ({ data, setData, onRemove }: ListProps) => {
         <DraggableFlatList
             data={wrappedData}
             extraData={data}
-            onDragEnd={({ data: nextData }) => handleDragEnd(nextData ?? [])}
+            onDragEnd={({ data: nextData }) =>
+                handleDragEnd(nextData ?? [])
+            }
             keyExtractor={(item) => item.id}
             renderItem={(params) => (
-                <TimelineItemRow {...params} onDelete={onRemove} />
+                <TimelineItemRow
+                    {...params}
+                    mode={mode}
+                    onDelete={onRemove}
+                />
             )}
             containerStyle={styles.container}
         />
@@ -38,5 +53,7 @@ export const TimelineList = ({ data, setData, onRemove }: ListProps) => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: {
+        flex: 1,
+    },
 });

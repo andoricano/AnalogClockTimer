@@ -13,7 +13,8 @@ import { SettingScreen } from "./src/screens/SettingScreen";
 import { SetTimerScreen } from "./src/screens/SetTimerScreen";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { ClockScreen } from "./src/screens/ClockScreen";
-import { RootStackParamList } from "./src/types/navigation"; 
+import { RootStackParamList } from "./src/types/navigation";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const adUnitId = __DEV__ ? TestIds.BANNER : "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx";
 
@@ -26,60 +27,63 @@ function MainLayout() {
   const isTimerScreen = currentScreen === "Timer";
 
   return (
-    <View style={styles.container}>
-      <StatusBar hidden={true} />
-      <NavigationBar hidden={true} />
 
-      <NavigationContainer
-        onStateChange={(state) => {
-          const currentRoute = state?.routes[state.index];
-          if (currentRoute) {
-            setCurrentScreen(currentRoute.name as keyof RootStackParamList);
-          }
-        }}
-      >
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerShown: true,
-            headerTitleAlign: "center",
-            headerShadowVisible: true,
-            headerStyle: { backgroundColor: "#fff" },
-            headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <StatusBar hidden={true} />
+        <NavigationBar hidden={true} />
+
+        <NavigationContainer
+          onStateChange={(state) => {
+            const currentRoute = state?.routes[state.index];
+            if (currentRoute) {
+              setCurrentScreen(currentRoute.name as keyof RootStackParamList);
+            }
           }}
         >
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={({ navigation }) => ({
-              title: "시험장 타이머",
-              headerRight: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Setting")}
-                  style={styles.headerButton}
-                >
-                  <Ionicons name="settings-outline" size={24} color="#333" />
-                </TouchableOpacity>
-              ),
-            })}
-          />
-          <Stack.Screen name="Setting" component={SettingScreen} options={{ title: "설정" }} />
-          <Stack.Screen name="SetTimer" component={SetTimerScreen} options={{ title: "타이머 설정" }} />
-          <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동" }} />
-          <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
-        </Stack.Navigator>
-      </NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerShown: true,
+              headerTitleAlign: "center",
+              headerShadowVisible: true,
+              headerStyle: { backgroundColor: "#fff" },
+              headerTitleStyle: { fontWeight: "bold", fontSize: 18 },
+            }}
+          >
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={({ navigation }) => ({
+                title: "시험장 타이머",
+                headerRight: () => (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Setting")}
+                    style={styles.headerButton}
+                  >
+                    <Ionicons name="settings-outline" size={24} color="#333" />
+                  </TouchableOpacity>
+                ),
+              })}
+            />
+            <Stack.Screen name="Setting" component={SettingScreen} options={{ title: "설정" }} />
+            <Stack.Screen name="SetTimer" component={SetTimerScreen} options={{ title: "타이머 설정" }} />
+            <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동" }} />
+            <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
+          </Stack.Navigator>
+        </NavigationContainer>
 
-      {isAdReady && !isTimerScreen && (
-        <View style={styles.adContainer}>
-          <BannerAd
-            unitId={adUnitId}
-            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-          />
-        </View>
-      )}
-    </View>
+        {isAdReady && !isTimerScreen && (
+          <View style={styles.adContainer}>
+            <BannerAd
+              unitId={adUnitId}
+              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+              requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+            />
+          </View>
+        )}
+      </View>
+    </GestureHandlerRootView>
   );
 }
 

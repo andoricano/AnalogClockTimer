@@ -45,7 +45,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }, [navigation]);
 
     const handlePressItem = (item: ExamTimerItem) => {
-        navigation.navigate('SetTimer', { id: item.id, add: false });
+        navigation.navigate('SetTimer', { mode: 'view', id: item.id });
     };
 
     const handleUpdateOrder = async (nextList: ExamTimerItem[]) => {
@@ -85,7 +85,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
             {!isEditMode && (
                 <View style={styles.bottomContainer}>
-                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SetTimer', { add: true })}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => navigation.navigate('SetTimer', { mode: 'create' })}
+                    >
                         <Text style={styles.buttonText}>타이머 추가하기</Text>
                     </TouchableOpacity>
                 </View>

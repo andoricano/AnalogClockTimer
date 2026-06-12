@@ -8,47 +8,133 @@ import {
     Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { testStorage, ExamTimer,  } from '../utils/storage/testStorage';
-import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
+import { testStorage, ExamTimer, } from '../utils/storage/testStorage';
 import { TimelineList } from '../components/timeline/TimelineList';
+import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
+import { TimerSetMode } from '../types/navigation';
+import { Ionicons } from '@expo/vector-icons';
 
 interface RouteParams {
-    add?: boolean;
+    mode: TimerSetMode;
     id?: string;
 }
 
 export const SetTimerScreen = () => {
     const route = useRoute();
+    const { mode: initialMode, id } = route.params as RouteParams;
+
+    const [mode, setMode] = useState<TimerSetMode>(initialMode);
     const navigation = useNavigation<any>();
-    const { add, id } = (route.params as RouteParams) || { add: true, id: undefined };
 
     const [title, setTitle] = useState<string>('');
     const [timeline, setTimeline] = useState<TimelineItem[]>([]);
+    const [currentId, setCurrentId] = useState<string | undefined>(id);
+
+    // 모드 판별 (View 모드일 경우 수정 불가 등으로 활용 가능)
+    const isCreateMode = mode === 'create';
+    const isEditMode = mode === 'edit';
+    const isViewMode = mode === 'view';
+
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const [activeId, setActiveId] = useState<string | undefined>(id);
-    const [isAddMode, setIsAddMode] = useState<boolean>(add ?? true);
+    useEffect(() => {
+        if (!isEditMode) {
+            return;
+        }
+
+        const unsubscribe = navigation.addListener(
+            'beforeRemove',
+            (e : any) => {
+                e.preventDefault();
+                setMode('view');
+            }
+        );
+
+        return unsubscribe;
+    }, [navigation, isEditMode]);
 
     useEffect(() => {
-        if (!add && id) {
-            const loadTargetExam = async () => {
+        if (isCreateMode || !id) {
+            return;
+        }
+
+        const loadTargetExam = async () => {
+            try {
                 const list = await testStorage.getExamList();
-                const target = list.find(exam => exam.id === id);
+
+                const target = list.find(
+                    exam => String(exam.id) === String(id)
+                );
+
                 if (target) {
                     setTitle(target.title);
                     setTimeline(target.timeline);
                 }
-            };
-            loadTargetExam();
+            } catch (error) {
+                console.error('타이머 로드 실패:', error);
+            }
+        };
+
+        loadTargetExam();
+    }, [id, isCreateMode]);
+
+
+    useEffect(() => {
+        if (isCreateMode) {
+            navigation.setOptions({
+                headerRight: () => null,
+            });
+            return;
         }
-    }, [add, id]);
+
+        if (isViewMode) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <TouchableOpacity
+                        style={styles.headerIconButton}
+                        onPress={() => setMode('edit')}
+                    >
+                        <Ionicons
+                            name="create-outline"
+                            size={24}
+                            color="#333"
+                        />
+                    </TouchableOpacity>
+                ),
+            });
+            return;
+        }
+        if (isEditMode) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <TouchableOpacity
+                        style={styles.headerIconButton}
+                        onPress={handleScheduleDelete}
+                    >
+                        <Ionicons
+                            name="trash-outline"
+                            size={24}
+                            color="#333"
+                        />
+                    </TouchableOpacity>
+                ),
+            });
+        }
+    }, [
+        navigation,
+        currentId,
+        isCreateMode,
+        isViewMode,
+        isEditMode,
+    ]);
+
+
 
     const saveToStorage = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
         const finalTitle = updatedTitle.trim() || '새로운 타이머';
 
-        if (isAddMode && !activeId) {
+        if (isCreateMode) {
             const newId = String(Date.now());
             const newExam: ExamTimer = {
                 id: newId,
@@ -56,93 +142,77 @@ export const SetTimerScreen = () => {
                 timeline: updatedTimeline,
             };
             await testStorage.addExam(newExam);
-            setActiveId(newId);
-            setIsAddMode(false);
             return newId;
-        } else if (activeId) {
+        } else if (id) {
             const currentList = await testStorage.getExamList();
             const updatedList = currentList.map(exam =>
-                exam.id === activeId ? { ...exam, title: finalTitle, timeline: updatedTimeline } : exam
+                exam.id === currentId ? { ...exam, title: finalTitle, timeline: updatedTimeline } : exam
             );
             await testStorage.setExamList(updatedList);
-            return activeId;
+            return currentId;
         }
-        return activeId;
+        return currentId;
     };
 
-    const handleDelete = () => {
-        if (!activeId) return;
+    const handleScheduleDelete = () => {
+        if (!currentId) return;
 
-        Alert.alert(
-            "타이머 삭제",
-            "정말로 이 타이머를 삭제하시겠습니까?",
-            [
-                { text: "취소", style: "cancel" },
-                {
-                    text: "삭제",
-                    style: "destructive",
-                    onPress: async () => {
-                        await testStorage.deleteExam(activeId);
-                        navigation.goBack();
-                    }
+        Alert.alert("타이머 삭제", "정말로 이 타이머를 삭제하시겠습니까?", [
+            { text: "취소", style: "cancel" },
+            {
+                text: "삭제",
+                style: "destructive",
+                onPress: async () => {
+                    await testStorage.deleteExam(currentId);
+                    navigation.goBack();
                 }
-            ]
-        );
+            }
+        ]);
     };
 
-    useEffect(() => {
-        if (!isAddMode && activeId) {
-            navigation.setOptions({
-                headerRight: () => (
-                    <TouchableOpacity onPress={handleDelete} style={styles.headerDeleteButton}>
-                        <Text style={styles.headerDeleteButtonText}>삭제</Text>
-                    </TouchableOpacity>
-                ),
-            });
-        } else {
-            navigation.setOptions({
-                headerRight: null,
-            });
-        }
-    }, [navigation, isAddMode, activeId]);
+    const shouldAutoSave = isEditMode;
 
+    const handleSaveEditToView = async () => {
+        const targetId = await saveToStorage(title, timeline);
+
+        if (targetId) {
+            setMode('view');
+        }
+    };
+
+    const handleSaveToView = async () => {
+        const targetId = await saveToStorage(title, timeline);
+
+        if (targetId) {
+            setCurrentId(targetId);
+            setMode('view');
+        }
+    };
     const handleSaveTimelineItem = async (subject: string, startTime: string, endTime: string) => {
         const updatedTimeline = [...timeline, { subject, startTime, endTime }];
         setTimeline(updatedTimeline);
-        
-        if (!isAddMode) {
-            await saveToStorage(title, updatedTimeline);
-        }
+        if (shouldAutoSave) await saveToStorage(title, updatedTimeline);
     };
 
     const handleUpdateTimelineOrder = (nextTimeline: TimelineItem[]) => {
+        console.log("=== 순서 정렬 완료 ===");
         setTimeline(nextTimeline);
     };
 
     const handleRemoveTimelineRow = async (index: number) => {
         const updatedTimeline = timeline.filter((_, i) => i !== index);
         setTimeline(updatedTimeline);
-
-        if (!isAddMode) {
-            await saveToStorage(title, updatedTimeline);
-        }
+        if (shouldAutoSave) await saveToStorage(title, updatedTimeline);
     };
 
     const handleTitleBlur = async () => {
-        if (!isAddMode && timeline.length > 0) {
+        if (shouldAutoSave && timeline.length > 0) {
             await saveToStorage(title, timeline);
         }
     };
 
-    const handleComplete = async () => {
-        const currentId = await saveToStorage(title, timeline);
-        if (currentId) {
-            navigation.navigate('Timer', { id: currentId });
-        }
-    };
-
     return (
-        <GestureHandlerRootView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.top}>
                 <Text style={styles.label}>타이머 제목</Text>
                 <TextInput
@@ -151,33 +221,69 @@ export const SetTimerScreen = () => {
                     value={title}
                     onChangeText={setTitle}
                     onBlur={handleTitleBlur}
+                    editable={!isViewMode}
                 />
 
                 <View style={styles.sectionHeader}>
                     <Text style={styles.label}>시험 시간표 설정</Text>
-                    <TouchableOpacity style={styles.rowAddButton} onPress={() => setIsDialogOpen(true)}>
-                        <Text style={styles.rowAddButtonText}>+ 시간 추가</Text>
-                    </TouchableOpacity>
+                    {!isViewMode && (
+                        <TouchableOpacity style={styles.rowAddButton} onPress={() => setIsDialogOpen(true)}>
+                            <Text style={styles.rowAddButtonText}>+ 시간 추가</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
 
             <View style={styles.listWrapper}>
                 <TimelineList
-                    data={timeline} 
-                    setData={handleUpdateTimelineOrder} 
-                    onRemove={handleRemoveTimelineRow} 
+                    mode={mode}
+                    data={timeline}
+                    setData={handleUpdateTimelineOrder}
+                    onRemove={handleRemoveTimelineRow}
                 />
             </View>
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.actionButton, styles.startButton]}
-                    onPress={handleComplete}
-                >
-                    <Text style={styles.buttonText}>타이머 준비 완료</Text>
-                </TouchableOpacity>
-            </View>
+            {/* View 모드가 아닐 때만 완료/저장 버튼 노출 */}
+            {
+                <View style={styles.buttonContainer}>
+                    {isCreateMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.saveActionButton]}
+                            onPress={handleSaveToView}
+                        >
+                            <Text style={styles.buttonText}>
+                                저장하기
+                            </Text>
+                        </TouchableOpacity>
+                    )}
 
+                    {isViewMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.startButton]}
+                            onPress={() => {
+                                if (currentId) {
+                                    navigation.navigate('Timer', { id: currentId });
+                                }
+                            }}
+                        >
+                            <Text style={styles.buttonText}>
+                                시작하기
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {isEditMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.saveActionButton]}
+                            onPress={handleSaveEditToView}
+                        >
+                            <Text style={styles.buttonText}>
+                                저장하기
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+            }
             <TimerSettingDialog
                 isOpen={isDialogOpen}
                 initialStartTime="09:00"
@@ -185,7 +291,7 @@ export const SetTimerScreen = () => {
                 onClose={() => setIsDialogOpen(false)}
                 onSave={handleSaveTimelineItem}
             />
-        </GestureHandlerRootView>
+        </View>
     );
 };
 
@@ -220,6 +326,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 24,
     },
+    headerIconButton: {
+        paddingHorizontal: 8,
+    },
+
+    saveActionButton: {
+        backgroundColor: '#4aa0f1',
+    },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -253,16 +366,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#34C759',
     },
     buttonText: {
-        color: '#fff',
+        color: '#ffffff',
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    headerDeleteButton: {
-        marginRight: 16,
-    },
-    headerDeleteButtonText: {
-        color: '#FF3B30',
-        fontSize: 16,
-        fontWeight: '600',
     },
 });
