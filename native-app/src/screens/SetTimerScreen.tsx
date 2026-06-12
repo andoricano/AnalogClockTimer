@@ -1,16 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     StyleSheet,
     Text,
     TouchableOpacity,
     TextInput,
-    ScrollView,
     Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { testStorage, ExamTimer, TimelineItem } from '../utils/storage/testStorage';
 import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
+import { TimelineList } from '../components/timeline/TimelineList';
 
 interface RouteParams {
     add?: boolean;
@@ -29,9 +30,6 @@ export const SetTimerScreen = () => {
     const [activeId, setActiveId] = useState<string | undefined>(id);
     const [isAddMode, setIsAddMode] = useState<boolean>(add ?? true);
 
-
-    const scrollViewRef = useRef<ScrollView>(null);
-
     useEffect(() => {
         if (!add && id) {
             const loadTargetExam = async () => {
@@ -46,7 +44,7 @@ export const SetTimerScreen = () => {
         }
     }, [add, id]);
 
-    const saveData = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
+    const saveToStorage = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
         const finalTitle = updatedTitle.trim() || '새로운 타이머';
 
         if (isAddMode && !activeId) {
@@ -59,13 +57,16 @@ export const SetTimerScreen = () => {
             await testStorage.addExam(newExam);
             setActiveId(newId);
             setIsAddMode(false);
+            return newId;
         } else if (activeId) {
             const currentList = await testStorage.getExamList();
             const updatedList = currentList.map(exam =>
                 exam.id === activeId ? { ...exam, title: finalTitle, timeline: updatedTimeline } : exam
             );
             await testStorage.setExamList(updatedList);
+            return activeId;
         }
+        return activeId;
     };
 
     const handleDelete = () => {
@@ -107,27 +108,40 @@ export const SetTimerScreen = () => {
     const handleSaveTimelineItem = async (subject: string, startTime: string, endTime: string) => {
         const updatedTimeline = [...timeline, { subject, startTime, endTime }];
         setTimeline(updatedTimeline);
-        await saveData(title, updatedTimeline);
+        
+        if (!isAddMode) {
+            await saveToStorage(title, updatedTimeline);
+        }
+    };
 
-        setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 50);
+    const handleUpdateTimelineOrder = (nextTimeline: TimelineItem[]) => {
+        setTimeline(nextTimeline);
     };
 
     const handleRemoveTimelineRow = async (index: number) => {
         const updatedTimeline = timeline.filter((_, i) => i !== index);
         setTimeline(updatedTimeline);
-        await saveData(title, updatedTimeline);
+
+        if (!isAddMode) {
+            await saveToStorage(title, updatedTimeline);
+        }
     };
 
     const handleTitleBlur = async () => {
-        if (timeline.length > 0) {
-            await saveData(title, timeline);
+        if (!isAddMode && timeline.length > 0) {
+            await saveToStorage(title, timeline);
+        }
+    };
+
+    const handleComplete = async () => {
+        const currentId = await saveToStorage(title, timeline);
+        if (currentId) {
+            navigation.navigate('Timer', { id: currentId });
         }
     };
 
     return (
-        <View style={styles.container}>
+        <GestureHandlerRootView style={styles.container}>
             <View style={styles.top}>
                 <Text style={styles.label}>타이머 제목</Text>
                 <TextInput
@@ -146,34 +160,22 @@ export const SetTimerScreen = () => {
                 </View>
             </View>
 
-            <ScrollView
-                ref={scrollViewRef}
-                style={styles.scrollContainer}
-                contentContainerStyle={styles.scrollContent}
-            >
-                {timeline.map((item, index) => (
-                    <View key={index} style={styles.timelineRow}>
-                        <View style={styles.rowTextContainer}>
-                            <Text style={styles.subjectText}>{item.subject}</Text>
-                            <Text style={styles.timeText}>{item.startTime} ~ {item.endTime}</Text>
-                        </View>
-                        <TouchableOpacity style={styles.rowDeleteButton} onPress={() => handleRemoveTimelineRow(index)}>
-                            <Text style={styles.rowDeleteButtonText}>삭제</Text>
-                        </TouchableOpacity>
-                    </View>
-                ))}
-            </ScrollView>
+            <View style={styles.listWrapper}>
+                <TimelineList
+                    data={timeline} 
+                    setData={handleUpdateTimelineOrder} 
+                    onRemove={handleRemoveTimelineRow} 
+                />
+            </View>
 
-            {!isAddMode && activeId && (
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.startButton]}
-                        onPress={() => navigation.navigate('Timer', { id: activeId })}
-                    >
-                        <Text style={styles.buttonText}>타이머 준비 완료</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                    style={[styles.actionButton, styles.startButton]}
+                    onPress={handleComplete}
+                >
+                    <Text style={styles.buttonText}>타이머 준비 완료</Text>
+                </TouchableOpacity>
+            </View>
 
             <TimerSettingDialog
                 isOpen={isDialogOpen}
@@ -182,7 +184,7 @@ export const SetTimerScreen = () => {
                 onClose={() => setIsDialogOpen(false)}
                 onSave={handleSaveTimelineItem}
             />
-        </View>
+        </GestureHandlerRootView>
     );
 };
 
@@ -196,10 +198,8 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         backgroundColor: '#f5f5f5',
     },
-    scrollContainer: {
+    listWrapper: {
         flex: 1,
-    },
-    scrollContent: {
         paddingHorizontal: 20,
         paddingVertical: 12,
     },
@@ -233,41 +233,6 @@ const styles = StyleSheet.create({
     },
     rowAddButtonText: {
         color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    timelineRow: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 16,
-        marginBottom: 10,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderWidth: 1,
-        borderColor: '#e5e5ea',
-    },
-    rowTextContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    subjectText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        width: '40%',
-    },
-    timeText: {
-        fontSize: 15,
-        color: '#666',
-    },
-    rowDeleteButton: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-    },
-    rowDeleteButtonText: {
-        color: '#FF3B30',
         fontSize: 14,
         fontWeight: '600',
     },
