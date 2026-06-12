@@ -25,10 +25,6 @@ export const TestScheduleList: React.FC<TestScheduleListProps> = ({
 }) => {
     return (
         <GestureHandlerRootView style={[styles.container, containerStyle]}>
-            <View style={styles.titleContainer}>
-                <Text style={styles.sectionTitle}>시간표 목록</Text>
-            </View>
-
             {data.length === 0 ? (
                 <View style={styles.placeholderContainer}>
                     <Text style={styles.placeholderText}>{placeholderText}</Text>
@@ -62,11 +58,6 @@ export const TestScheduleList: React.FC<TestScheduleListProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    titleContainer: {
-        paddingHorizontal: 20,
-        paddingTop: 16,
-        paddingBottom: 4,
     },
     sectionTitle: {
         fontSize: 14,

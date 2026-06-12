@@ -92,6 +92,10 @@ export const TestScheduleItemRow: React.FC<TestScheduleItemRowProps> = ({
                         <Text style={styles.deleteButtonText}>삭제</Text>
                     </TouchableOpacity>
                 )}
+
+                {!isEditMode && (
+                    <Ionicons name="enter-outline" size={24} color="#216a9e" style={{ marginRight: 8 }} />
+                )}
             </View>
         </TouchableOpacity>
     );

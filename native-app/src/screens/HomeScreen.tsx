@@ -35,16 +35,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             ),
             headerRight: () => (
                 <TouchableOpacity
-                    onPress={() => setIsEditMode(!isEditMode)}
+                    onPress={() => navigation.navigate('Setting')}
                     style={styles.headerRightButton}
                 >
-                    <Text style={[styles.headerRightButtonText, isEditMode && styles.activeEditText]}>
-                        {isEditMode ? '완료' : '편집'}
-                    </Text>
+                    <Ionicons name="settings-outline" size={24} color="#333" />
                 </TouchableOpacity>
             ),
         });
-    }, [navigation, isEditMode]);
+    }, [navigation]);
 
     const handlePressItem = (item: ExamTimerItem) => {
         navigation.navigate('SetTimer', { id: item.id, add: false });
@@ -62,8 +60,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            {/* 시간표 목록 타이틀 및 편집 버튼 행 */}
+            <View style={styles.titleRowContainer}>
+                <Text style={styles.titleText}>시간표 목록</Text>
+                <TouchableOpacity
+                    onPress={() => setIsEditMode(!isEditMode)}
+                    style={styles.inlineEditButton}
+                >
+                    <Text style={[styles.inlineEditButtonText, isEditMode && styles.activeEditText]}>
+                        {isEditMode ? '완료' : '편집'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
             <TestScheduleList
-                data={examList} 
+                data={examList}
                 onPressItem={handlePressItem}
                 isEditMode={isEditMode}
                 onUpdateOrder={handleUpdateOrder}
@@ -85,6 +98,37 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    titleRowContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        height: 64,
+        backgroundColor: '#f5f5f5',
+    },
+    titleText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#111',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#e0e0e0',
+        marginHorizontal: 20,
+        marginBottom: 10,
+    },
+    inlineEditButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+    },
+    inlineEditButtonText: {
+        fontSize: 16,
+        color: '#007AFF',
+        fontWeight: '600',
+    },
+    activeEditText: {
+        color: '#34C759',
     },
     bottomContainer: {
         paddingHorizontal: 20,
@@ -108,13 +152,5 @@ const styles = StyleSheet.create({
     },
     headerRightButton: {
         marginRight: 16,
-    },
-    headerRightButtonText: {
-        fontSize: 16,
-        color: '#007AFF',
-        fontWeight: '600',
-    },
-    activeEditText: {
-        color: '#34C759',
     },
 });
