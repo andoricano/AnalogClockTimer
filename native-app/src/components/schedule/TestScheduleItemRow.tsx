@@ -63,48 +63,43 @@ export const TestScheduleItemRow: React.FC<TestScheduleItemRowProps> = ({
 
     return (
         <TouchableOpacity
-            style={styles.cardWrapper}
+            style={[
+                styles.cardContainer,
+                { backgroundColor: isActive ? '#e5e5ea' : '#fff' },
+                isEditMode && styles.editCard
+            ]}
             onPress={() => onPressItem?.(item)}
             activeOpacity={0.7}
             disabled={isActive || isEditMode}
         >
-            <View
-                style={[
-                    styles.cardContainer,
-                    { backgroundColor: isActive ? '#e5e5ea' : '#fff' },
-                    isEditMode && styles.editCard
-                ]}
-            >
-                <View style={styles.cardInner}>
-                    {isEditMode && (
-                        <TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
-                            <Ionicons name="menu-outline" size={24} color="#999" />
-                        </TouchableOpacity>
-                    )}
+            <View style={styles.cardInner}>
+                {isEditMode && (
+                    <TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
+                        <Ionicons name="menu-outline" size={24} color="#999" />
+                    </TouchableOpacity>
+                )}
 
-                    <View style={styles.textContainer}>
-                        <Text style={styles.cardTitle}>{item.title}</Text>
-                        <Text style={styles.cardDuration}>총 시험 시간: {totalDurationText}</Text>
-                    </View>
-
-                    {isEditMode && (
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => onDeleteItem?.(item.id)}
-                        >
-                            <Text style={styles.deleteButtonText}>삭제</Text>
-                        </TouchableOpacity>
-                    )}
+                <View style={styles.textContainer}>
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <Text style={styles.cardDuration}>총 시험 시간: {totalDurationText}</Text>
                 </View>
+
+                {isEditMode && (
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => onDeleteItem?.(item.id)}
+                    >
+                        <Text style={styles.deleteButtonText}>삭제</Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </TouchableOpacity>
     );
 };
+
 const styles = StyleSheet.create({
-    cardWrapper: {
-        marginBottom: 12,
-    },
     cardContainer: {
+        marginBottom: 12,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: 'transparent',
