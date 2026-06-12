@@ -13,10 +13,13 @@ interface ScheduleControllerProps {
     startTime: string;
     endTime: string;
     timerStatus: TimerStatus;
-    onClickRefresh: () => void;
+    currentIndex: number;
+    timelineLength: number;
     onClickStart: () => void;
     onClickStop: () => void;
-    onClickSetting: () => void;
+    onClickRefresh: () => void;
+    onClickScheduleList: () => void; // 시간표 모달 오픈용
+    onClickChange: (index: number) => void; // 인덱스 직접 변경용
 }
 
 export const ScheduleController: React.FC<ScheduleControllerProps> = ({
@@ -24,31 +27,43 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
     startTime,
     endTime,
     timerStatus,
-    onClickRefresh,
+    currentIndex,
+    timelineLength,
     onClickStart,
     onClickStop,
-    onClickSetting
+    onClickRefresh,
+    onClickScheduleList,
+    onClickChange
 }) => {
+    const isLastSchedule = currentIndex === timelineLength - 1;
+    
+    // 다음 스케줄 혹은 처음 스케줄 인덱스 계산
+    const nextIndex = isLastSchedule ? 0 : currentIndex + 1;
+
     const actionConfig = {
         START: { text: '시작하기', onPress: onClickStart, style: styles.startButton },
         STOP: { text: '중지하기', onPress: onClickStop, style: styles.stopButton },
+        NEXT: { 
+            text: isLastSchedule ? '처음 시간으로' : '다음 시간', 
+            onPress: () => onClickChange(nextIndex), 
+            style: styles.nextButton 
+        },
         RESUME: { text: '이어하기', onPress: onClickStart, style: styles.startButton },
-        RESTART: { text: '다시하기', onPress: onClickStart, style: styles.startButton },
         RESET: { text: '새로하기', onPress: onClickRefresh, style: styles.refreshButton },
     };
 
     const leftButtonConfig: Record<TimerStatus, { visible: boolean; action?: typeof actionConfig[keyof typeof actionConfig] }> = {
-        READY: { visible: false },
+        READY: { visible: true, action: actionConfig.NEXT },
         RUNNING: { visible: false },
         PAUSED: { visible: true, action: actionConfig.RESET },
-        FINISHED: { visible: true, action: actionConfig.RESET },
+        FINISHED: { visible: true, action: actionConfig.NEXT },
     };
 
     const rightButtonConfig: Record<TimerStatus, typeof actionConfig[keyof typeof actionConfig]> = {
         READY: actionConfig.START,
         RUNNING: actionConfig.STOP,
         PAUSED: actionConfig.RESUME,
-        FINISHED: actionConfig.RESTART,
+        FINISHED: actionConfig.START,
     };
 
     const currentLeft = leftButtonConfig[timerStatus];
@@ -62,8 +77,9 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
                     <Text style={styles.timeText}>{startTime} ~ {endTime}</Text>
                 </View>
 
-                <Pressable onPress={onClickSetting} style={styles.editButton}>
-                    <Ionicons name="time-outline" size={22} color="#007aff" />
+                {/* 전체 시간표 확인 버튼으로 변경 */}
+                <Pressable onPress={onClickScheduleList} style={styles.listButton}>
+                    <Ionicons name="list-outline" size={22} color="#007aff" />
                 </Pressable>
             </View>
 
@@ -125,16 +141,16 @@ const styles = StyleSheet.create({
         color: '#666',
         fontFamily: 'monospace',
     },
-    editButton: {
+    listButton: {
         padding: 12,
-        backgroundColor: '#efffc1',
+        backgroundColor: '#e1f5fe',
         borderRadius: 8,
         marginLeft: 12,
     },
     buttonArea: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         marginTop: 4,
     },
     actionButton: {
@@ -150,18 +166,17 @@ const styles = StyleSheet.create({
     stopButton: {
         backgroundColor: '#ff3b30',
     },
+    nextButton: {
+        backgroundColor: '#8e8e93',
+        marginRight: 8,
+    },
+    refreshButton: {
+        backgroundColor: '#007aff',
+        marginRight: 8,
+    },
     actionButtonText: {
         color: '#ffffff',
         fontSize: 15,
         fontWeight: 'bold',
-    },
-    refreshButton: {
-        flex: 1,
-        height: 44,
-        borderRadius: 8,
-        backgroundColor: '#007aff',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
     },
 });

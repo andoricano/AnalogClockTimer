@@ -2,15 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AnalogClock } from '../components/AnalogClock';
-import { useTimerContext } from '../context/TimerContext';
-import { GuideOverlay } from '../components/guide/GuideOverlay';
 
 interface ClockScreenProps {
     navigation: any;
 }
 
 export const ClockScreen: React.FC<ClockScreenProps> = ({ navigation }) => {
-    const { showTutorial, closeTutorial } = useTimerContext();
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {

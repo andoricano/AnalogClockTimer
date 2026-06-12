@@ -12,6 +12,7 @@ import { AnalogClock } from '../components/AnalogClock';
 import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { testStorage, defaultExamData } from '../utils/storage/testStorage';
 import { ScheduleController } from '../components/schedule/ScheduleController';
+import { TimelineSelectDialog } from '../components/modals/TimelineSelectDialog';
 
 export const TimerScreen = () => {
     const navigation = useNavigation<any>();
@@ -34,16 +35,10 @@ export const TimerScreen = () => {
         stop,
     } = useTimer();
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isSettingVisible, setIsSettingVisible] = useState(true);
+    const [isListModalOpen, setIsListModalOpen] = useState(false);
 
-    console.log('=== [TimerScreen] 실시간 상태 디버깅 ===');
-    console.log('- 파라미터 ID:', id);
-    console.log('- 현재 과목 (currentSubject):', currentSubject);
-    console.log('- 스케줄 위치:', `${currentIndex + 1} / ${timeline.length}`);
-    console.log('- 현재 교시 범위:', `${startTime} ~ ${endTime}`);
-    console.log('- 렌더링 시간 / 상태:', `${renderingTime} [${timerStatus}]`);
-    console.log('======================================');
+
 
     useEffect(() => {
         navigation.setOptions({
@@ -113,7 +108,7 @@ export const TimerScreen = () => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={handleClockPress}
-                    disabled={timerStatus !== 'RUNNING'} 
+                    disabled={timerStatus !== 'RUNNING'}
                 >
                     <AnalogClock angles={getFinalAngles()} />
                 </TouchableOpacity>
@@ -125,26 +120,44 @@ export const TimerScreen = () => {
                     ]}
                     pointerEvents={!clockMode && isSettingVisible ? 'auto' : 'none'}
                 >
+
+
+
                     <ScheduleController
                         subject={currentSubject}
                         startTime={startTime}
                         endTime={endTime}
                         timerStatus={timerStatus}
-                        onClickRefresh={setRenderStartTime}
+                        currentIndex={currentIndex}
+                        timelineLength={timeline.length}
                         onClickStart={start}
                         onClickStop={stop}
-                        onClickSetting={() => setIsDialogOpen(true)}
+                        onClickRefresh={setRenderStartTime}
+                        onClickScheduleList={() => setIsListModalOpen(true)} // 전체 시간표 모달 열기 함수 바인딩
+                        onClickChange={(targetIndex) => {
+                            if (targetIndex >= 0 && targetIndex < timeline.length) {
+                                initScheduleTimeline(timeline, targetIndex);
+                            } else {
+                                initScheduleTimeline(timeline, 0);
+                            }
+                        }}
                     />
+
+
                 </View>
             </View>
 
-            <TimerSettingDialog
-                isOpen={isDialogOpen}
-                initialStartTime={startTime}
-                initialEndTime={endTime}
-                onClose={() => setIsDialogOpen(false)}
-                onSave={(newStart, newEnd) => {
-                    setManualTimeRange(newStart, newEnd);
+            <TimelineSelectDialog
+                isOpen={isListModalOpen}
+                onClose={() => setIsListModalOpen(false)}
+                timeline={timeline}
+                currentIndex={currentIndex}
+                onClickChange={(targetIndex) => {
+                    if (targetIndex >= 0 && targetIndex < timeline.length) {
+                        initScheduleTimeline(timeline, targetIndex);
+                    } else {
+                        initScheduleTimeline(timeline, 0);
+                    }
                 }}
             />
         </View>

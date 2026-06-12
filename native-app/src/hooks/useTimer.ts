@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { timeToSeconds, secondsToTime, formatTimeFromDate } from '../utils/timer';
-import { TimelineItem } from '../utils/storage/testStorage';
+import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
 
 export type TimerStatus = 'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED';
 
