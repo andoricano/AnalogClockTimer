@@ -56,7 +56,6 @@ const calculateTotalDuration = (timeline: TimelineItem[]): string => {
     }
     return `${totalMinutes}분`;
 };
-
 export const TestScheduleList: React.FC<TestScheduleListProps> = ({
     data,
     onPressItem,
@@ -81,6 +80,11 @@ export const TestScheduleList: React.FC<TestScheduleListProps> = ({
 
     return (
         <View style={[styles.container, containerStyle]}>
+            {/* 상단 작은 타이틀 영역 */}
+            <View style={styles.titleContainer}>
+                <Text style={styles.sectionTitle}>시간표 목록</Text>
+            </View>
+
             {data.length === 0 ? (
                 <View style={styles.placeholderContainer}>
                     <Text style={styles.placeholderText}>{placeholderText}</Text>
@@ -102,9 +106,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    titleContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 4,
+    },
+    sectionTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#8e8e93',
+    },
     listContent: {
         paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingVertical: 12,
     },
     card: {
         backgroundColor: '#fff',
