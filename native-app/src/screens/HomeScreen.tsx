@@ -1,27 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { testStorage } from '../utils/storage/testStorage';
 import { Ionicons } from '@expo/vector-icons';
+import { testStorage, defaultExamData } from '../utils/storage/testStorage';
 import { ExamTimerItem } from '../components/schedule/TestScheduleItemRow';
 import { TestScheduleList } from '../components/schedule/TestScheduleList';
+import { useTimerContext } from '../context/TimerContext'; // 💡 훅 이름 매칭 확인
 
 interface HomeScreenProps {
     navigation: any;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-    const [examList, setExamList] = useState<ExamTimerItem[]>([]);
+    const [examList, setExamList] = useState<ExamTimerItem[] | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
+    const { isInitialized } = useTimerContext();
 
     const loadData = async () => {
+        if (isInitialized === null) {
+            setExamList(null);
+            return;
+        }
+
+        if (isInitialized === false) {
+            setExamList([defaultExamData]);
+            return;
+        }
+
         const list = await testStorage.getExamList();
-        setExamList(list as ExamTimerItem[]);
+
+        if (!list || list.length === 0) {
+            setExamList([]); 
+        } else {
+            setExamList(list as ExamTimerItem[]);
+        }
     };
+
+
+    useEffect(() => {
+        loadData();
+    }, [isInitialized]);
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', loadData);
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation, isInitialized]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -96,6 +118,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </View>
     );
 };
+
+
 
 const styles = StyleSheet.create({
     container: {

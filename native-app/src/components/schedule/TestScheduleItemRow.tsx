@@ -20,7 +20,7 @@ interface TestScheduleItemRowProps {
     isActive: boolean;
     isEditMode: boolean;
     onPressItem?: (item: ExamTimerItem) => void;
-    onDeleteItem?: (id: string) => void;
+    onDeleteItem: (id: string) => void;
 }
 
 const getTimelineMinutes = (timeStr: string): number => {
