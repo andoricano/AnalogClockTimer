@@ -9,7 +9,7 @@ interface TimerContextType {
     isAdReady: boolean;
     isInitialized: boolean | null;
 }
-
+const adUnitId = process.env.EXPO_PUBLIC_BANNER_ID || "";
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,12 +41,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // 초기화 검사 실행
         checkInit();
 
-        // 광고 초기화 로직 (기존 유지)
         console.log("[AdMob] init start");
-        mobileAds().setRequestConfiguration({
-            testDeviceIdentifiers: ['109A7A12FEF994574AFE64F6ABA6D6E3']
-        });
-
         mobileAds()
             .initialize()
             .then((adapterStatuses) => {
@@ -57,7 +52,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 console.log("[AdMob] init failed:", e);
                 setIsAdReady(false);
             });
-            
+
     }, []);
 
     return (
