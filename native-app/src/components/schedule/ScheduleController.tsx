@@ -18,8 +18,8 @@ interface ScheduleControllerProps {
     onClickStart: () => void;
     onClickStop: () => void;
     onClickRefresh: () => void;
-    onClickScheduleList: () => void; // 시간표 모달 오픈용
-    onClickChange: (index: number) => void; // 인덱스 직접 변경용
+    onClickScheduleList: () => void;
+    onClickChange: (index: number) => void;
 }
 
 export const ScheduleController: React.FC<ScheduleControllerProps> = ({
@@ -36,8 +36,6 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
     onClickChange
 }) => {
     const isLastSchedule = currentIndex === timelineLength - 1;
-
-    // 다음 스케줄 혹은 처음 스케줄 인덱스 계산
     const nextIndex = isLastSchedule ? 0 : currentIndex + 1;
 
     const actionConfig = {
@@ -56,7 +54,7 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
         READY: { visible: true, action: actionConfig.NEXT },
         RUNNING: { visible: false },
         PAUSED: { visible: true, action: actionConfig.RESET },
-        FINISHED: { visible: true, action: actionConfig.NEXT },
+        FINISHED: { visible: true, action: actionConfig.NEXT }, 
     };
 
     const rightButtonConfig: Record<TimerStatus, typeof actionConfig[keyof typeof actionConfig]> = {
@@ -68,6 +66,8 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
 
     const currentLeft = leftButtonConfig[timerStatus];
     const currentRight = rightButtonConfig[timerStatus];
+
+    const showLeftButton = currentLeft.visible && currentLeft.action;
 
     return (
         <View style={styles.settingBox}>
@@ -85,13 +85,13 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
             </View>
 
             <View style={styles.buttonArea}>
-                {currentLeft.visible && currentLeft.action && (
+                {showLeftButton && (
                     <Pressable
-                        onPress={currentLeft.action.onPress}
-                        style={[styles.actionButton, currentLeft.action.style]}
+                        onPress={currentLeft.action!.onPress}
+                        style={[styles.actionButton, currentLeft.action!.style]}
                     >
                         <Text style={styles.actionButtonText}>
-                            {currentLeft.action.text}
+                            {currentLeft.action!.text}
                         </Text>
                     </Pressable>
                 )}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     },
     listButton: {
         padding: 12,
-        backgroundColor: '#e1f5fe',
+        backgroundColor: '#e8f2ff', // 파란색 아이콘과 어울리는 연한 파란색 배경으로 변경
         borderRadius: 8,
         marginLeft: 12,
     },
@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginTop: 4,
+        gap: 8, // 버튼 사이의 여백을 마진 대신 gap으로 처리 (버튼이 혼자 남았을 때 공백 에러 방지)
     },
     actionButton: {
         flex: 1,
@@ -168,12 +169,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#ff3b30',
     },
     nextButton: {
-        backgroundColor: '#8e8e93',
-        marginRight: 8,
+        backgroundColor: '#6ba401',
+        // marginRight 제거 (gap으로 대체)
     },
     refreshButton: {
         backgroundColor: '#007aff',
-        marginRight: 8,
+        // marginRight 제거 (gap으로 대체)
     },
     actionButtonText: {
         color: '#ffffff',

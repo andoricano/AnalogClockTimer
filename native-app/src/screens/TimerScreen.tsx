@@ -51,13 +51,17 @@ export const TimerScreen = () => {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        if (timerStatus === 'RUNNING') {
-            setIsSettingVisible(false);
-        } else if (timerStatus === 'READY' || timerStatus === 'FINISHED') {
-            setIsSettingVisible(true);
-        }
-    }, [timerStatus]);
+    // 2. 대신 아래 두 핸들러 함수를 추가합니다.
+    const handleStart = () => {
+        // 화면을 먼저 끄거나 동시에 처리되도록 유도
+        setIsSettingVisible(false);
+        start();
+    };
+
+    const handleStop = () => {
+        setIsSettingVisible(true);
+        stop();
+    };
 
     useEffect(() => {
         navigation.setOptions({
@@ -131,6 +135,8 @@ export const TimerScreen = () => {
                     <AnalogClock angles={getFinalAngles()} />
                 </TouchableOpacity>
 
+
+
                 <View
                     style={[
                         styles.bottomArea,
@@ -138,9 +144,6 @@ export const TimerScreen = () => {
                     ]}
                     pointerEvents={!clockMode && isSettingVisible ? 'auto' : 'none'}
                 >
-
-
-
                     <ScheduleController
                         subject={currentSubject}
                         startTime={startTime}
@@ -148,8 +151,8 @@ export const TimerScreen = () => {
                         timerStatus={timerStatus}
                         currentIndex={currentIndex}
                         timelineLength={timeline.length}
-                        onClickStart={start}
-                        onClickStop={stop}
+                        onClickStart={handleStart}
+                        onClickStop={handleStop}  
                         onClickRefresh={setRenderStartTime}
                         onClickScheduleList={() => setIsListModalOpen(true)}
                         onClickChange={(targetIndex) => {
@@ -160,9 +163,10 @@ export const TimerScreen = () => {
                             }
                         }}
                     />
-
-
                 </View>
+
+
+
             </View>
 
             <TimelineSelectDialog
