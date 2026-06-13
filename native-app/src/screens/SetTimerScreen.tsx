@@ -45,7 +45,7 @@ export const SetTimerScreen = () => {
 
         const unsubscribe = navigation.addListener(
             'beforeRemove',
-            (e : any) => {
+            (e: any) => {
                 e.preventDefault();
                 setMode('view');
             }
@@ -130,29 +130,30 @@ export const SetTimerScreen = () => {
     ]);
 
 
-
     const saveToStorage = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
-        const finalTitle = updatedTitle.trim() || '새로운 타이머';
+        const finalTitle = updatedTitle.trim() === '' ? '새로운 타이머' : updatedTitle.trim();
+        const finalTimeline = updatedTimeline || [];
 
         if (isCreateMode) {
             const newId = String(Date.now());
             const newExam: ExamTimer = {
                 id: newId,
                 title: finalTitle,
-                timeline: updatedTimeline,
+                timeline: finalTimeline,
             };
             await testStorage.addExam(newExam);
-            return newId;
+            return { id: newId, title: finalTitle };
         } else if (id) {
             const currentList = await testStorage.getExamList();
             const updatedList = currentList.map(exam =>
-                exam.id === currentId ? { ...exam, title: finalTitle, timeline: updatedTimeline } : exam
+                exam.id === currentId ? { ...exam, title: finalTitle, timeline: finalTimeline } : exam
             );
             await testStorage.setExamList(updatedList);
-            return currentId;
+            return { id: currentId, title: finalTitle };
         }
-        return currentId;
+        return { id: currentId, title: finalTitle };
     };
+
 
     const handleScheduleDelete = () => {
         if (!currentId) return;
@@ -163,6 +164,10 @@ export const SetTimerScreen = () => {
                 text: "삭제",
                 style: "destructive",
                 onPress: async () => {
+                    // 1. 모드를 변경하여 beforeRemove 리스너가 차단하지 않도록 설정
+                    setMode('view');
+
+                    // 2. 삭제 및 뒤로가기 진행
                     await testStorage.deleteExam(currentId);
                     navigation.goBack();
                 }
@@ -181,13 +186,22 @@ export const SetTimerScreen = () => {
     };
 
     const handleSaveToView = async () => {
-        const targetId = await saveToStorage(title, timeline);
+        // 1. 타임라인 벨리데이션
+        if (!timeline || timeline.length === 0) {
+            Alert.alert("알림", "최소 하나의 일정을 추가해주세요.");
+            return;
+        }
 
-        if (targetId) {
-            setCurrentId(targetId);
+        const result = await saveToStorage(title, timeline);
+
+        if (result && result.id) {
+            setCurrentId(result.id); 
+            setTitle(result.title); 
+
             setMode('view');
         }
     };
+
     const handleSaveTimelineItem = async (subject: string, startTime: string, endTime: string) => {
         const updatedTimeline = [...timeline, { subject, startTime, endTime }];
         setTimeline(updatedTimeline);
