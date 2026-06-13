@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -9,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
-import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { testStorage, defaultExamData } from '../utils/storage/testStorage';
 import { ScheduleController } from '../components/schedule/ScheduleController';
 import { TimelineSelectDialog } from '../components/modals/TimelineSelectDialog';
@@ -37,8 +36,34 @@ export const TimerScreen = () => {
 
     const [isSettingVisible, setIsSettingVisible] = useState(true);
     const [isListModalOpen, setIsListModalOpen] = useState(false);
+    const prevStatusRef = useRef(timerStatus);
+    const prevSettingRef = useRef(isSettingVisible);
 
+    // 1. 네비게이션 기본 옵션 설정 (헤더를 투명하게 만들고 절대 좌표처럼 띄움)
+    useEffect(() => {
+        navigation.setOptions({
+            headerTransparent: true,
+            headerBlurEffect: 'none',
+            headerStyle: {
+                backgroundColor: 'transparent',
+            },
+            headerShadowVisible: false,
+        });
+    }, [navigation]);
 
+    useEffect(() => {
+        if (timerStatus === 'RUNNING') {
+            setIsSettingVisible(false);
+        } else if (timerStatus === 'READY' || timerStatus === 'FINISHED') {
+            setIsSettingVisible(true);
+        }
+    }, [timerStatus]);
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerShown: isSettingVisible
+        });
+    }, [navigation, isSettingVisible]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -79,13 +104,6 @@ export const TimerScreen = () => {
         }
     }, [clockMode]);
 
-    useEffect(() => {
-        if (timerStatus === 'RUNNING') {
-            setIsSettingVisible(false);
-        } else if (timerStatus === 'READY' || timerStatus === 'FINISHED') {
-            setIsSettingVisible(true);
-        }
-    }, [timerStatus]);
 
     const handleClockPress = () => {
         if (timerStatus === 'RUNNING') {
@@ -133,7 +151,7 @@ export const TimerScreen = () => {
                         onClickStart={start}
                         onClickStop={stop}
                         onClickRefresh={setRenderStartTime}
-                        onClickScheduleList={() => setIsListModalOpen(true)} // 전체 시간표 모달 열기 함수 바인딩
+                        onClickScheduleList={() => setIsListModalOpen(true)}
                         onClickChange={(targetIndex) => {
                             if (targetIndex >= 0 && targetIndex < timeline.length) {
                                 initScheduleTimeline(timeline, targetIndex);

@@ -20,6 +20,11 @@ export const ClockScreen: React.FC<ClockScreenProps> = ({ navigation }) => {
 
     useEffect(() => {
         navigation.setOptions({
+            headerTransparent: true,
+            headerStyle: {
+                backgroundColor: 'transparent',
+            },
+            headerShadowVisible: false,
             headerRight: () => (
                 <TouchableOpacity
                     onPress={() => navigation.setOptions({ headerShown: false })}

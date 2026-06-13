@@ -36,17 +36,17 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
     onClickChange
 }) => {
     const isLastSchedule = currentIndex === timelineLength - 1;
-    
+
     // 다음 스케줄 혹은 처음 스케줄 인덱스 계산
     const nextIndex = isLastSchedule ? 0 : currentIndex + 1;
 
     const actionConfig = {
         START: { text: '시작하기', onPress: onClickStart, style: styles.startButton },
         STOP: { text: '중지하기', onPress: onClickStop, style: styles.stopButton },
-        NEXT: { 
-            text: isLastSchedule ? '처음 시간으로' : '다음 시간', 
-            onPress: () => onClickChange(nextIndex), 
-            style: styles.nextButton 
+        NEXT: {
+            text: isLastSchedule ? '처음 시간으로' : '다음 시간',
+            onPress: () => onClickChange(nextIndex),
+            style: styles.nextButton
         },
         RESUME: { text: '이어하기', onPress: onClickStart, style: styles.startButton },
         RESET: { text: '새로하기', onPress: onClickRefresh, style: styles.refreshButton },
@@ -77,10 +77,11 @@ export const ScheduleController: React.FC<ScheduleControllerProps> = ({
                     <Text style={styles.timeText}>{startTime} ~ {endTime}</Text>
                 </View>
 
-                {/* 전체 시간표 확인 버튼으로 변경 */}
-                <Pressable onPress={onClickScheduleList} style={styles.listButton}>
-                    <Ionicons name="list-outline" size={22} color="#007aff" />
-                </Pressable>
+                {timerStatus !== 'RUNNING' && (
+                    <Pressable onPress={onClickScheduleList} style={styles.listButton}>
+                        <Ionicons name="list-outline" size={22} color="#007aff" />
+                    </Pressable>
+                )}
             </View>
 
             <View style={styles.buttonArea}>
