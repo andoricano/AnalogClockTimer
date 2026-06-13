@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { TimerProvider, useTimerContext } from "./src/context/TimerContext";
 import { HomeScreen } from "./src/screens/HomeScreen";
-import { SettingScreen } from "./src/screens/SettingScreen";
+import { AppSettingScreen } from "./src/screens/AppSettingScreen";
 import { SetTimerScreen } from "./src/screens/SetTimerScreen";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { ClockScreen } from "./src/screens/ClockScreen";
@@ -66,7 +66,7 @@ function MainLayout() {
                 ),
               })}
             />
-            <Stack.Screen name="Setting" component={SettingScreen} options={{ title: "설정" }} />
+            <Stack.Screen name="Setting" component={AppSettingScreen} options={{ title: "설정" }} />
             <Stack.Screen name="SetTimer" component={SetTimerScreen} options={{ title: "타이머 설정" }} />
             <Stack.Screen name="Timer" component={TimerScreen} options={{ title: "타이머 작동" }} />
             <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
