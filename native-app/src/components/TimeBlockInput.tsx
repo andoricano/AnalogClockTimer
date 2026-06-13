@@ -18,12 +18,13 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
     value,
     onChange,
 }) => {
+
     const rawParts = value ? value.split(':') : [];
 
     const timeParts = [
-        rawParts[0] ?? '',
-        rawParts[1] ?? '',
-        rawParts[2] ?? '',
+        rawParts[0] ? rawParts[0].padStart(2, '0') : '00',
+        rawParts[1] ? rawParts[1].padStart(2, '0') : '00',
+        rawParts[2] ? rawParts[2].padStart(2, '0') : '00',
     ];
 
     const hours = Number(timeParts[0]) || 0;
@@ -210,18 +211,10 @@ const styles = StyleSheet.create({
         color: '#1c1c1e',
         textAlign: 'center',
 
-        // 1. lineHeight는 OS별 버그를 유발하므로 과감히 제거합니다.
-        // lineHeight: 56, 
-
-        // 2. 내부 패딩을 0으로 만들어 기본 마진 간섭을 차단합니다.
         paddingTop: 0,
         paddingBottom: 0,
         paddingHorizontal: 0,
-
-        // 3. 안드로이드 전용 폰트 패딩 제거 (필수)
         includeFontPadding: false,
-
-        // 4. 입력창 내부 콘텐츠를 수직 중앙 정렬하는 네이티브 속성입니다.
         textAlignVertical: 'center',
     },
 

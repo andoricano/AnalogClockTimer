@@ -6,6 +6,8 @@ import {
     TouchableOpacity,
     TextInput,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { testStorage, ExamTimer, } from '../utils/storage/testStorage';
@@ -14,6 +16,7 @@ import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
 import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
 import { TimerSetMode } from '../types/navigation';
 import { Ionicons } from '@expo/vector-icons';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 interface RouteParams {
     mode: TimerSetMode;
@@ -23,7 +26,7 @@ interface RouteParams {
 export const SetTimerScreen = () => {
     const route = useRoute();
     const { mode: initialMode, id } = route.params as RouteParams;
-
+    const headerHeight = useHeaderHeight();
     const [mode, setMode] = useState<TimerSetMode>(initialMode);
     const navigation = useNavigation<any>();
 
@@ -195,8 +198,8 @@ export const SetTimerScreen = () => {
         const result = await saveToStorage(title, timeline);
 
         if (result && result.id) {
-            setCurrentId(result.id); 
-            setTitle(result.title); 
+            setCurrentId(result.id);
+            setTitle(result.title);
 
             setMode('view');
         }
@@ -226,7 +229,11 @@ export const SetTimerScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior="padding"
+            keyboardVerticalOffset={headerHeight}
+        >
             <View style={styles.top}>
                 <Text style={styles.label}>타이머 제목</Text>
                 <TextInput
@@ -305,7 +312,8 @@ export const SetTimerScreen = () => {
                 onClose={() => setIsDialogOpen(false)}
                 onSave={handleSaveTimelineItem}
             />
-        </View>
+        </KeyboardAvoidingView>
+
     );
 };
 

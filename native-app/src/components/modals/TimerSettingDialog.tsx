@@ -6,6 +6,8 @@ import {
     Pressable,
     Keyboard,
     StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { TimeBlockInput } from '../TimeBlockInput';
@@ -63,87 +65,97 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
                 onClose();
             }}
             onBackButtonPress={onClose}
-            avoidKeyboard={true}
+            avoidKeyboard={false}
             style={styles.modalCentered}
             useNativeDriver={true}
             hideModalContentWhileAnimating={true}
             animationIn="fadeIn"
             animationOut="fadeOut"
-            animationInTiming={0}
-            animationOutTiming={0}
-            backdropTransitionInTiming={0}
-            backdropTransitionOutTiming={1}
+            animationInTiming={100}
+            animationOutTiming={100}
+            backdropTransitionInTiming={100}
+            backdropTransitionOutTiming={100}
         >
-            <View style={styles.dialogBox}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>과목 시간 추가</Text>
-                    <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
-                        <Text style={styles.toggleLabel}>
-                            {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
-                        </Text>
-                    </Pressable>
-                </View>
-
-                <View style={styles.formGroup}>
-                    <Text style={styles.label}>과목명</Text>
-                    <TextInput
-                        value={subjectInput}
-                        onChangeText={setSubjectInput}
-                        style={styles.input}
-                        placeholder="예: 국어"
-                    />
-                </View>
-
-                <View style={styles.formGroup}>
-                    <Text style={styles.label}>시작 시간</Text>
-                    <TimeBlockInput value={startInput} onChange={setStartInput} />
-                </View>
-
-                {!isDurationMode ? (
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>종료 시간</Text>
-                        <TimeBlockInput value={endInput} onChange={setEndInput} />
+            <KeyboardAvoidingView
+                behavior="padding"
+                style={styles.keyboardAvoidingView}
+            >
+                <View style={styles.dialogBox}>
+                    <View style={styles.header}>
+                        <Text style={styles.title}>과목 시간 추가</Text>
+                        <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
+                            <Text style={styles.toggleLabel}>
+                                {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
+                            </Text>
+                        </Pressable>
                     </View>
-                ) : (
+
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>운영 시간 (분)</Text>
+                        <Text style={styles.label}>과목명</Text>
                         <TextInput
-                            value={durationInput}
-                            onChangeText={setDurationInput}
-                            keyboardType="numeric"
+                            value={subjectInput}
+                            onChangeText={setSubjectInput}
                             style={styles.input}
-                            placeholder="90"
+                            placeholder="예: 국어"
                         />
                     </View>
-                )}
 
-                <View style={styles.buttonArea}>
-                    <Pressable style={styles.cancelButton} onPress={onClose}>
-                        <Text style={styles.cancelButtonText}>취소</Text>
-                    </Pressable>
-                    <Pressable style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>적용</Text>
-                    </Pressable>
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>시작 시간</Text>
+                        <TimeBlockInput value={startInput} onChange={setStartInput} />
+                    </View>
+
+                    {!isDurationMode ? (
+                        <View style={styles.formGroup}>
+                            <Text style={styles.label}>종료 시간</Text>
+                            <TimeBlockInput value={endInput} onChange={setEndInput} />
+                        </View>
+                    ) : (
+                        <View style={styles.formGroup}>
+                            <Text style={styles.label}>운영 시간 (분)</Text>
+                            <TextInput
+                                value={durationInput}
+                                onChangeText={setDurationInput}
+                                keyboardType="numeric"
+                                style={styles.input}
+                                placeholder="90"
+                            />
+                        </View>
+                    )}
+
+                    <View style={styles.buttonArea}>
+                        <Pressable style={styles.cancelButton} onPress={onClose}>
+                            <Text style={styles.cancelButtonText}>취소</Text>
+                        </Pressable>
+                        <Pressable style={styles.saveButton} onPress={handleSave}>
+                            <Text style={styles.saveButtonText}>적용</Text>
+                        </Pressable>
+                    </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
     modalCentered: {
-        justifyContent: 'center',
-        alignItems: 'center',
         margin: 0,
     },
+    keyboardAvoidingView: {
+        flex: 1,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     dialogBox: {
-        width: '85%',
+        width: '92%',
         backgroundColor: '#fff',
         borderRadius: 14,
         padding: 20,
     },
     header: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 16,
     },
