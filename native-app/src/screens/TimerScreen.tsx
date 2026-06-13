@@ -65,18 +65,18 @@ export const TimerScreen = () => {
         });
     }, [navigation, isSettingVisible]);
 
-    useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <TouchableOpacity
-                    onPress={() => console.log('설정 모달 오픈 로그')}
-                    style={styles.headerRightButton}
-                >
-                    <Ionicons name="settings-outline" size={24} color="#333" />
-                </TouchableOpacity>
-            ),
-        });
-    }, [navigation]);
+    // useEffect(() => {
+    //     navigation.setOptions({
+    //         headerRight: () => (
+    //             <TouchableOpacity
+    //                 onPress={() => console.log('설정 모달 오픈 로그')}
+    //                 style={styles.headerRightButton}
+    //             >
+    //                 <Ionicons name="settings-outline" size={24} color="#333" />
+    //             </TouchableOpacity>
+    //         ),
+    //     });
+    // }, [navigation]);
 
     useEffect(() => {
         const loadActiveSchedule = async () => {

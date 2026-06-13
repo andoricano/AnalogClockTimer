@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RenderItemParams } from 'react-native-draggable-flatlist';
 import { TimerSetMode } from '../../types/navigation';
+import { formatToTimeString } from '../../utils/timer';
 
 export interface TimelineSetItem {
     subject: string;
@@ -30,6 +31,10 @@ export const TimelineItemRow = ({
     const index = getIndex();
     const isEditableMode = mode === 'create' || mode === 'edit';
 
+    const formattedStartTime = formatToTimeString(item.startTime);
+    const formattedEndTime = formatToTimeString(item.endTime);
+
+
     return (
         <View
             style={[
@@ -55,7 +60,7 @@ export const TimelineItemRow = ({
                     {item.subject}
                 </Text>
                 <Text style={styles.timeText}>
-                    {item.startTime} ~ {item.endTime}
+                    {formattedStartTime} ~ {formattedEndTime}
                 </Text>
             </View>
 

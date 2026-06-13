@@ -54,3 +54,16 @@ export const calculateTotalExamMinutes = (timeline: { startTime: string; endTime
     }
     return `${totalMinutes}분`;
 };
+
+
+export const formatToTimeString = (timeStr: string) => {
+    if (!timeStr) return '00:00:00';
+
+    const parts = timeStr.split(':');
+
+    const hh = parts[0]?.padStart(2, '0') || '00';
+    const mm = parts[1]?.padStart(2, '0') || '00';
+    const ss = parts[2]?.padStart(2, '0') || '00';
+
+    return `${hh}:${mm}:${ss}`;
+};

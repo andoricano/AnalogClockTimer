@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TimelineItem } from '../schedule/TestScheduleItemRow';
+import { formatToTimeString } from '../../utils/timer';
 
 interface TimelineSelectDialogProps {
     isOpen: boolean;
@@ -26,24 +27,32 @@ export const TimelineSelectDialog: React.FC<TimelineSelectDialogProps> = ({
     currentIndex,
     onClickChange,
 }) => {
-    
-    // isOpen이 false면 아무것도 연산하지 않고 즉시 화면에서 완전히 제외합니다.
+    const [localIndex, setLocalIndex] = useState<number>(currentIndex);
+
+    useEffect(() => {
+        setLocalIndex(currentIndex);
+    }, [isOpen, currentIndex]);
+
     if (!isOpen) return null;
 
+    const handleConfirm = () => {
+        onClickChange(localIndex);
+        onClose();
+    };
+
     const renderItem = ({ item, index }: { item: TimelineItem; index: number }) => {
-        const isSelected = index === currentIndex;
+        const isSelected = index === localIndex;
+        const formattedStartTime = formatToTimeString(item.startTime);
+        const formattedEndTime = formatToTimeString(item.endTime);
 
         return (
             <TouchableOpacity
-                activeOpacity={1} // 터치 시 잔상이나 흐려짐 현상도 완전 제거
+                activeOpacity={1}
                 style={[
                     styles.row,
                     isSelected && styles.selectedRow
                 ]}
-                onPress={() => {
-                    onClickChange(index); // 1. 데이터 변경
-                    onClose();           // 2. 모달 즉시 닫기
-                }}
+                onPress={() => setLocalIndex(index)}
             >
                 <View style={styles.checkboxContainer}>
                     <Ionicons
@@ -58,7 +67,7 @@ export const TimelineSelectDialog: React.FC<TimelineSelectDialogProps> = ({
                         {item.subject}
                     </Text>
                     <Text style={styles.timeText}>
-                        {item.startTime} ~ {item.endTime}
+                        {formattedStartTime} ~ {formattedEndTime}
                     </Text>
                 </View>
             </TouchableOpacity>
@@ -70,7 +79,7 @@ export const TimelineSelectDialog: React.FC<TimelineSelectDialogProps> = ({
             <Pressable style={styles.pressableOverlay} onPress={onClose}>
                 <Pressable style={styles.dialogBox}>
                     <View style={styles.header}>
-                        <Text style={styles.headerTitle}>전체 시간표 확인</Text>
+                        <Text style={styles.headerTitle}>시간 선택</Text>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color="#333" />
                         </TouchableOpacity>
@@ -83,6 +92,21 @@ export const TimelineSelectDialog: React.FC<TimelineSelectDialogProps> = ({
                         contentContainerStyle={styles.listContainer}
                         showsVerticalScrollIndicator={false}
                     />
+
+                    <View style={styles.actionButtonGroup}>
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.cancelButton]}
+                            onPress={onClose}
+                        >
+                            <Text style={styles.cancelButtonText}>취소</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.confirmButton]}
+                            onPress={handleConfirm}
+                        >
+                            <Text style={styles.confirmButtonText}>확인</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Pressable>
             </Pressable>
         </View>
@@ -98,7 +122,7 @@ const styles = StyleSheet.create({
         left: 0,
         width: width,
         height: height,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // 반투명 배경 효과도 누르는 즉시 생김
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 9999,
@@ -117,7 +141,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         paddingHorizontal: 16,
         paddingTop: 16,
-        paddingBottom: 8,
+        paddingBottom: 16, // 버튼 컴포넌트 여백 조절
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
@@ -176,5 +200,36 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
         marginTop: 2,
+    },
+    actionButtonGroup: {
+        flexDirection: 'row',
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderColor: '#e5e5ea',
+        gap: 12,
+    },
+    actionButton: {
+        flex: 1,
+        height: 44,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#f2f2f7',
+    },
+    confirmButton: {
+        backgroundColor: '#007aff',
+    },
+    cancelButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#48484a',
+    },
+    confirmButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#fff',
     },
 });
