@@ -36,8 +36,6 @@ export const TimerScreen = () => {
 
     const [isSettingVisible, setIsSettingVisible] = useState(true);
     const [isListModalOpen, setIsListModalOpen] = useState(false);
-    const prevStatusRef = useRef(timerStatus);
-    const prevSettingRef = useRef(isSettingVisible);
 
     // 1. 네비게이션 기본 옵션 설정 (헤더를 투명하게 만들고 절대 좌표처럼 띄움)
     useEffect(() => {
@@ -51,9 +49,7 @@ export const TimerScreen = () => {
         });
     }, [navigation]);
 
-    // 2. 대신 아래 두 핸들러 함수를 추가합니다.
     const handleStart = () => {
-        // 화면을 먼저 끄거나 동시에 처리되도록 유도
         setIsSettingVisible(false);
         start();
     };
@@ -124,6 +120,12 @@ export const TimerScreen = () => {
         };
     };
 
+    useEffect(() => {
+        if (timerStatus === 'FINISHED' || timerStatus === 'READY') {
+            setIsSettingVisible(true);
+        }
+    }, [timerStatus]);
+
     return (
         <View style={styles.container}>
             <View style={styles.mainContent}>
@@ -152,7 +154,7 @@ export const TimerScreen = () => {
                         currentIndex={currentIndex}
                         timelineLength={timeline.length}
                         onClickStart={handleStart}
-                        onClickStop={handleStop}  
+                        onClickStop={handleStop}
                         onClickRefresh={setRenderStartTime}
                         onClickScheduleList={() => setIsListModalOpen(true)}
                         onClickChange={(targetIndex) => {
