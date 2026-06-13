@@ -16,7 +16,7 @@ import { ClockScreen } from "./src/screens/ClockScreen";
 import { RootStackParamList } from "./src/types/navigation";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const adUnitId = __DEV__ ? TestIds.BANNER : "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx";
+const adUnitId = process.env.EXPO_PUBLIC_BANNER_ID || "";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
