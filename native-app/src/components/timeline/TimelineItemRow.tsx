@@ -28,8 +28,7 @@ export const TimelineItemRow = ({
     mode,
 }: RowProps) => {
     const index = getIndex();
-
-    const isCreateMode = mode === 'create';
+    const isEditableMode = mode === 'create' || mode === 'edit';
 
     return (
         <View
@@ -38,7 +37,7 @@ export const TimelineItemRow = ({
                 { backgroundColor: isActive ? '#e5e5ea' : '#fff' },
             ]}
         >
-            {isCreateMode && (
+            {isEditableMode && (
                 <TouchableOpacity
                     onPressIn={drag}
                     style={styles.dragHandle}
@@ -60,7 +59,7 @@ export const TimelineItemRow = ({
                 </Text>
             </View>
 
-            {isCreateMode && (
+            {isEditableMode && (
                 <TouchableOpacity
                     style={styles.deleteButton}
                     onPress={() => {
