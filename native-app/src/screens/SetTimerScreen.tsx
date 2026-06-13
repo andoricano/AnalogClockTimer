@@ -17,77 +17,42 @@ import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
 import { TimerSetMode } from '../types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useHeaderHeight } from '@react-navigation/elements';
+import { useSetTimer } from '../hooks/useSetTimer';
 
 interface RouteParams {
     mode: TimerSetMode;
     id?: string;
 }
-
 export const SetTimerScreen = () => {
     const route = useRoute();
     const { mode: initialMode, id } = route.params as RouteParams;
-    const headerHeight = useHeaderHeight();
-    const [mode, setMode] = useState<TimerSetMode>(initialMode);
     const navigation = useNavigation<any>();
+    const headerHeight = useHeaderHeight(); // 기존 선언부 복구
 
-    const [title, setTitle] = useState<string>('');
-    const [timeline, setTimeline] = useState<TimelineItem[]>([]);
-    const [currentId, setCurrentId] = useState<string | undefined>(id);
-
-    // 모드 판별 (View 모드일 경우 수정 불가 등으로 활용 가능)
-    const isCreateMode = mode === 'create';
-    const isEditMode = mode === 'edit';
-    const isViewMode = mode === 'view';
+    const {
+        mode,
+        setMode,
+        title,
+        setTitle,
+        timeline,
+        currentId, 
+        isCreateMode,
+        isEditMode,
+        isViewMode,
+        handleScheduleDelete,
+        handleSaveEditToView,
+        handleSaveToView,
+        handleSaveTimelineItem,
+        handleUpdateTimelineOrder,
+        handleRemoveTimelineRow,
+        handleTitleBlur,
+    } = useSetTimer(initialMode, id);
 
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     useEffect(() => {
-        if (!isEditMode) {
-            return;
-        }
-
-        const unsubscribe = navigation.addListener(
-            'beforeRemove',
-            (e: any) => {
-                e.preventDefault();
-                setMode('view');
-            }
-        );
-
-        return unsubscribe;
-    }, [navigation, isEditMode]);
-
-    useEffect(() => {
-        if (isCreateMode || !id) {
-            return;
-        }
-
-        const loadTargetExam = async () => {
-            try {
-                const list = await testStorage.getExamList();
-
-                const target = list.find(
-                    exam => String(exam.id) === String(id)
-                );
-
-                if (target) {
-                    setTitle(target.title);
-                    setTimeline(target.timeline);
-                }
-            } catch (error) {
-                console.error('타이머 로드 실패:', error);
-            }
-        };
-
-        loadTargetExam();
-    }, [id, isCreateMode]);
-
-
-    useEffect(() => {
         if (isCreateMode) {
-            navigation.setOptions({
-                headerRight: () => null,
-            });
+            navigation.setOptions({ headerRight: () => null });
             return;
         }
 
@@ -98,16 +63,13 @@ export const SetTimerScreen = () => {
                         style={styles.headerIconButton}
                         onPress={() => setMode('edit')}
                     >
-                        <Ionicons
-                            name="create-outline"
-                            size={24}
-                            color="#333"
-                        />
+                        <Ionicons name="create-outline" size={24} color="#333" />
                     </TouchableOpacity>
                 ),
             });
             return;
         }
+
         if (isEditMode) {
             navigation.setOptions({
                 headerRight: () => (
@@ -115,120 +77,12 @@ export const SetTimerScreen = () => {
                         style={styles.headerIconButton}
                         onPress={handleScheduleDelete}
                     >
-                        <Ionicons
-                            name="trash-outline"
-                            size={24}
-                            color="#333"
-                        />
+                        <Ionicons name="trash-outline" size={24} color="#333" />
                     </TouchableOpacity>
                 ),
             });
         }
-    }, [
-        navigation,
-        currentId,
-        isCreateMode,
-        isViewMode,
-        isEditMode,
-    ]);
-
-
-    const saveToStorage = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
-        const finalTitle = updatedTitle.trim() === '' ? '새로운 타이머' : updatedTitle.trim();
-        const finalTimeline = updatedTimeline || [];
-
-        if (isCreateMode) {
-            const newId = String(Date.now());
-            const newExam: ExamTimer = {
-                id: newId,
-                title: finalTitle,
-                timeline: finalTimeline,
-            };
-            await testStorage.addExam(newExam);
-            return { id: newId, title: finalTitle };
-        } else if (id) {
-            const currentList = await testStorage.getExamList();
-            const updatedList = currentList.map(exam =>
-                exam.id === currentId ? { ...exam, title: finalTitle, timeline: finalTimeline } : exam
-            );
-            await testStorage.setExamList(updatedList);
-            return { id: currentId, title: finalTitle };
-        }
-        return { id: currentId, title: finalTitle };
-    };
-
-
-    const handleScheduleDelete = () => {
-        if (!currentId) return;
-
-        Alert.alert("타이머 삭제", "정말로 이 타이머를 삭제하시겠습니까?", [
-            { text: "취소", style: "cancel" },
-            {
-                text: "삭제",
-                style: "destructive",
-                onPress: async () => {
-                    // 1. 모드를 변경하여 beforeRemove 리스너가 차단하지 않도록 설정
-                    setMode('view');
-
-                    // 2. 삭제 및 뒤로가기 진행
-                    await testStorage.deleteExam(currentId);
-                    navigation.goBack();
-                }
-            }
-        ]);
-    };
-
-    const shouldAutoSave = isEditMode;
-
-    const handleSaveEditToView = async () => {
-        const targetId = await saveToStorage(title, timeline);
-
-        if (targetId) {
-            setMode('view');
-        }
-    };
-
-    const handleSaveToView = async () => {
-        // 1. 타임라인 벨리데이션
-        if (!timeline || timeline.length === 0) {
-            Alert.alert("알림", "최소 하나의 일정을 추가해주세요.");
-            return;
-        }
-
-        const result = await saveToStorage(title, timeline);
-
-        if (result && result.id) {
-            setCurrentId(result.id);
-            setTitle(result.title);
-
-            setMode('view');
-        }
-    };
-
-    const handleSaveTimelineItem = async (subject: string, startTime: string, endTime: string) => {
-        const updatedTimeline = [...timeline, { subject, startTime, endTime }];
-        setTimeline(updatedTimeline);
-        if (shouldAutoSave) await saveToStorage(title, updatedTimeline);
-    };
-
-    const handleUpdateTimelineOrder = async (nextTimeline: TimelineItem[]) => {
-        setTimeline(nextTimeline);
-        if (shouldAutoSave) {
-            await saveToStorage(title, nextTimeline);
-        }
-    };
-
-    const handleRemoveTimelineRow = async (index: number) => {
-        const updatedTimeline = timeline.filter((_, i) => i !== index);
-        setTimeline(updatedTimeline);
-        if (shouldAutoSave) await saveToStorage(title, updatedTimeline);
-    };
-
-    const handleTitleBlur = async () => {
-        if (shouldAutoSave && timeline.length > 0) {
-            await saveToStorage(title, timeline);
-        }
-    };
+    }, [navigation, isCreateMode, isViewMode, isEditMode]);
 
     return (
         <KeyboardAvoidingView
@@ -266,47 +120,39 @@ export const SetTimerScreen = () => {
                 />
             </View>
 
-            {/* View 모드가 아닐 때만 완료/저장 버튼 노출 */}
-            {
-                <View style={styles.buttonContainer}>
-                    {isCreateMode && (
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.saveActionButton]}
-                            onPress={handleSaveToView}
-                        >
-                            <Text style={styles.buttonText}>
-                                저장하기
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+            <View style={styles.buttonContainer}>
+                {isCreateMode && (
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.saveActionButton]}
+                        onPress={handleSaveToView}
+                    >
+                        <Text style={styles.buttonText}>저장하기</Text>
+                    </TouchableOpacity>
+                )}
 
-                    {isViewMode && (
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.startButton]}
-                            onPress={() => {
-                                if (currentId) {
-                                    navigation.navigate('Timer', { id: currentId });
-                                }
-                            }}
-                        >
-                            <Text style={styles.buttonText}>
-                                시작하기
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+                {isViewMode && (
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.startButton]}
+                        onPress={() => {
+                            if (currentId) {
+                                navigation.navigate('Timer', { id: currentId });
+                            }
+                        }}
+                    >
+                        <Text style={styles.buttonText}>시작하기</Text>
+                    </TouchableOpacity>
+                )}
 
-                    {isEditMode && (
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.saveActionButton]}
-                            onPress={handleSaveEditToView}
-                        >
-                            <Text style={styles.buttonText}>
-                                저장하기
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
-            }
+                {isEditMode && (
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.saveActionButton]}
+                        onPress={handleSaveEditToView}
+                    >
+                        <Text style={styles.buttonText}>저장하기</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+
             <TimerSettingDialog
                 isOpen={isDialogOpen}
                 initialStartTime="09:00"
@@ -315,9 +161,10 @@ export const SetTimerScreen = () => {
                 onSave={handleSaveTimelineItem}
             />
         </KeyboardAvoidingView>
-
     );
 };
+
+
 
 const styles = StyleSheet.create({
     container: {
