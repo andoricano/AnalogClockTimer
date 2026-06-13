@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 interface TimeBlockInputProps {
-    value: string;
+    value: string; // "HH:MM:SS"
     onChange: (newValue: string) => void;
 }
 
@@ -18,163 +18,121 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
     value,
     onChange,
 }) => {
+    // 1. 유저가 화면에서 보는 날것의 입력 문자열 상태 (처음엔 빈 값)
+    const [hText, setHText] = useState('');
+    const [mText, setMText] = useState('');
+    const [sText, setSText] = useState('');
 
-    const rawParts = value ? value.split(':') : [];
+    // 부모 값이 외부에서 들어올 때 최초 동기화 (00 포맷을 유저가 보기 편하게 0으로 변환)
+    useEffect(() => {
+        if (value) {
+            const parts = value.split(':');
+            setHText(parts[0] ? String(Number(parts[0])) : '0');
+            setMText(parts[1] ? String(Number(parts[1])) : '0');
+            setSText(parts[2] ? String(Number(parts[2])) : '0');
+        }
+    }, [value]);
 
-    const timeParts = [
-        rawParts[0] ? rawParts[0].padStart(2, '0') : '00',
-        rawParts[1] ? rawParts[1].padStart(2, '0') : '00',
-        rawParts[2] ? rawParts[2].padStart(2, '0') : '00',
-    ];
+    // 위아래 증감 버튼 로직 (실시간으로 부모에게 변경 전송)
+    const updateValue = (field: 'h' | 'm' | 's', amount: number) => {
+        let hNum = Number(hText) || 0;
+        let mNum = Number(mText) || 0;
+        let sNum = Number(sText) || 0;
 
-    const hours = Number(timeParts[0]) || 0;
-    const minutes = Number(timeParts[1]) || 0;
-    const seconds = Number(timeParts[2]) || 0;
+        if (field === 'h') hNum = (hNum + amount + 24) % 24;
+        if (field === 'm') mNum = (mNum + amount + 60) % 60;
+        if (field === 's') sNum = (sNum + amount + 60) % 60;
 
-    const updateValue = (
-        field: 'h' | 'm' | 's',
-        amount: number
-    ) => {
-        let newH = hours;
-        let newM = minutes;
-        let newS = seconds;
+        const nextH = String(hNum);
+        const nextM = String(mNum);
+        const nextS = String(sNum);
+
+        setHText(nextH);
+        setMText(nextM);
+        setSText(nextS);
+        
+        // 증감 시 부모에게 실시간 전달
+        onChange(`${nextH}:${nextM}:${nextS}`);
+    };
+
+    // 2. 텍스트 직접 입력 로직 (값이 비면 부모에게는 0을 전달하되, 내 화면은 빈 칸 유지)
+    const handleInputChange = (field: 'h' | 'm' | 's', text: string) => {
+        const sanitized = text.replace(/[^0-9]/g, '');
+
+        // 부모에게 전달할 값 계산 (빈 값이면 '0'으로 치환)
+        const parentValue = sanitized === '' ? '0' : sanitized;
 
         if (field === 'h') {
-            newH = (hours + amount + 24) % 24;
+            setHText(sanitized); // 💡 내 화면은 빈 칸("") 그대로 유지 (0이 부활 안 함)
+            onChange(`${parentValue}:${mText || '0'}:${sText || '0'}`); // 부모에게 실시간 전달
         } else if (field === 'm') {
-            newM = (minutes + amount + 60) % 60;
+            setMText(sanitized);
+            onChange(`${hText || '0'}:${parentValue}:${sText || '0'}`);
         } else if (field === 's') {
-            newS = (seconds + amount + 60) % 60;
+            setSText(sanitized);
+            onChange(`${hText || '0'}:${mText || '0'}:${parentValue}`);
         }
-
-        const hStr = newH.toString().padStart(2, '0');
-        const mStr = newM.toString().padStart(2, '0');
-        const sStr = newS.toString().padStart(2, '0');
-
-        onChange(`${hStr}:${mStr}:${sStr}`);
-    };
-
-    const handleInputChange = (
-        field: 'h' | 'm' | 's',
-        inputValue: string
-    ) => {
-        const sanitized = inputValue
-            .replace(/[^0-9]/g, '')
-            .slice(0, 2);
-
-        let hStr = timeParts[0];
-        let mStr = timeParts[1];
-        let sStr = timeParts[2];
-
-        if (field === 'h') hStr = sanitized;
-        if (field === 'm') mStr = sanitized;
-        if (field === 's') sStr = sanitized;
-
-        onChange(`${hStr}:${mStr}:${sStr}`);
-    };
-
-    const handleBlur = (field: 'h' | 'm' | 's') => {
-        let hNum = Number(timeParts[0]) || 0;
-        let mNum = Number(timeParts[1]) || 0;
-        let sNum = Number(timeParts[2]) || 0;
-
-        if (field === 'h') hNum = Math.min(hNum, 23);
-        if (field === 'm') mNum = Math.min(mNum, 59);
-        if (field === 's') sNum = Math.min(sNum, 59);
-
-        const hStr = hNum.toString().padStart(2, '0');
-        const mStr = mNum.toString().padStart(2, '0');
-        const sStr = sNum.toString().padStart(2, '0');
-
-        onChange(`${hStr}:${mStr}:${sStr}`);
     };
 
     return (
         <View style={styles.blockContainer}>
-            {/* 시 (Hour) 블록 */}
+            {/* 시 (Hour) */}
             <View style={styles.unitWrapper}>
-                <Pressable
-                    onPress={() => updateValue('h', 1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('h', 1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
-
                 <TextInput
                     placeholder="00"
                     placeholderTextColor="#c7c7cc"
-                    value={timeParts[0]}
+                    value={hText}
                     onChangeText={(text) => handleInputChange('h', text)}
-                    onBlur={() => handleBlur('h')}
                     style={styles.blockInput}
                     keyboardType="number-pad"
                     maxLength={2}
                 />
-
-                <Pressable
-                    onPress={() => updateValue('h', -1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('h', -1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
 
             <Text style={styles.colon}>:</Text>
 
-            {/* 분 (Minute) 블록 */}
+            {/* 분 (Minute) */}
             <View style={styles.unitWrapper}>
-                <Pressable
-                    onPress={() => updateValue('m', 1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('m', 1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
-
                 <TextInput
                     placeholder="00"
                     placeholderTextColor="#c7c7cc"
-                    value={timeParts[1]}
+                    value={mText}
                     onChangeText={(text) => handleInputChange('m', text)}
-                    onBlur={() => handleBlur('m')}
                     style={styles.blockInput}
                     keyboardType="number-pad"
                     maxLength={2}
                 />
-
-                <Pressable
-                    onPress={() => updateValue('m', -1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('m', -1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
 
             <Text style={styles.colon}>:</Text>
 
-            {/* 초 (Second) 블록 */}
+            {/* 초 (Second) */}
             <View style={styles.unitWrapper}>
-                <Pressable
-                    onPress={() => updateValue('s', 1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('s', 1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-up" size={16} color="#8e8e93" />
                 </Pressable>
-
                 <TextInput
                     placeholder="00"
                     placeholderTextColor="#c7c7cc"
-                    value={timeParts[2]}
+                    value={sText}
                     onChangeText={(text) => handleInputChange('s', text)}
-                    onBlur={() => handleBlur('s')}
                     style={styles.blockInput}
                     keyboardType="number-pad"
                     maxLength={2}
                 />
-
-                <Pressable
-                    onPress={() => updateValue('s', -1)}
-                    style={styles.arrowButton}
-                >
+                <Pressable onPress={() => updateValue('s', -1)} style={styles.arrowButton}>
                     <Ionicons name="chevron-down" size={16} color="#8e8e93" />
                 </Pressable>
             </View>
@@ -200,8 +158,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-
-
     blockInput: {
         width: '100%',
         height: 56,
@@ -210,15 +166,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#1c1c1e',
         textAlign: 'center',
-
         paddingTop: 0,
         paddingBottom: 0,
         paddingHorizontal: 0,
         includeFontPadding: false,
         textAlignVertical: 'center',
     },
-
-
     arrowButton: {
         width: '100%',
         alignItems: 'center',

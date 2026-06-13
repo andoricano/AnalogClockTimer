@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { TimeBlockInput } from '../TimeBlockInput';
-import { minutesToTime, timeToMinutes } from '../../utils/timer';
+import { formatToTimeString, minutesToTime, timeToMinutes } from '../../utils/timer';
 
 interface TimerSettingDialogProps {
     isOpen: boolean;
@@ -45,15 +45,21 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     }, [isOpen]);
 
     const handleSave = () => {
-        let calculatedEndTime = endInput;
+        // 적용하기 직전에 빈 칸을 '00' 포맷으로 채워 최종 수렴
+        const finalStartTime = formatToTimeString(startInput);
+        let finalEndTime = '';
 
         if (isDurationMode) {
-            const startMinutes = timeToMinutes(startInput);
-            const calculatedEndMinutes = startMinutes + Number(durationInput);
-            calculatedEndTime = minutesToTime(calculatedEndMinutes);
+            const startMinutes = timeToMinutes(finalStartTime);
+            const calculatedEndMinutes = startMinutes + (Number(durationInput) || 0);
+            finalEndTime = minutesToTime(calculatedEndMinutes);
+        } else {
+            finalEndTime = formatToTimeString(endInput);
         }
 
-        onSave(subjectInput.trim() || '무제 과목', startInput, calculatedEndTime);
+
+        onSave(subjectInput.trim() || '무제 과목', finalStartTime, finalEndTime);
+        console.log(finalStartTime, finalEndTime)
         onClose();
     };
 
@@ -77,7 +83,7 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
             backdropTransitionOutTiming={100}
         >
             <KeyboardAvoidingView
-                behavior="padding"
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 style={styles.keyboardAvoidingView}
             >
                 <View style={styles.dialogBox}>
@@ -115,7 +121,7 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
                             <Text style={styles.label}>운영 시간 (분)</Text>
                             <TextInput
                                 value={durationInput}
-                                onChangeText={setDurationInput}
+                                onChangeText={(text) => setDurationInput(text.replace(/[^0-9]/g, ''))}
                                 keyboardType="numeric"
                                 style={styles.input}
                                 placeholder="90"
