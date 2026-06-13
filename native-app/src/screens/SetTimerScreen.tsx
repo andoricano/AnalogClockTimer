@@ -5,15 +5,13 @@ import {
     Text,
     TouchableOpacity,
     TextInput,
-    Alert,
     KeyboardAvoidingView,
     Platform,
+    Keyboard,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { testStorage, ExamTimer, } from '../utils/storage/testStorage';
 import { TimelineList } from '../components/timeline/TimelineList';
 import { TimerSettingDialog } from '../components/modals/TimerSettingDialog';
-import { TimelineItem } from '../components/schedule/TestScheduleItemRow';
 import { TimerSetMode } from '../types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useHeaderHeight } from '@react-navigation/elements';
@@ -27,7 +25,7 @@ export const SetTimerScreen = () => {
     const route = useRoute();
     const { mode: initialMode, id } = route.params as RouteParams;
     const navigation = useNavigation<any>();
-    const headerHeight = useHeaderHeight(); // 기존 선언부 복구
+    const headerHeight = useHeaderHeight();
 
     const {
         mode,
@@ -35,7 +33,7 @@ export const SetTimerScreen = () => {
         title,
         setTitle,
         timeline,
-        currentId, 
+        currentId,
         isCreateMode,
         isEditMode,
         isViewMode,
@@ -85,73 +83,84 @@ export const SetTimerScreen = () => {
     }, [navigation, isCreateMode, isViewMode, isEditMode]);
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior="padding"
-            keyboardVerticalOffset={headerHeight}
-        >
-            <View style={styles.top}>
-                <Text style={styles.label}>타이머 제목</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="예: 국가직 9급 공무원 시험"
-                    value={title}
-                    onChangeText={setTitle}
-                    onBlur={handleTitleBlur}
-                    editable={!isViewMode}
-                />
+        <View style={styles.container}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={headerHeight}
+            >
+                <View style={styles.top}>
+                    <Text style={styles.label}>타이머 제목</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="예: 국가직 9급 공무원 시험"
+                        value={title}
+                        onChangeText={setTitle}
+                        onBlur={handleTitleBlur}
+                        editable={!isViewMode}
+                    />
 
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.label}>시험 시간표 설정</Text>
-                    {!isViewMode && (
-                        <TouchableOpacity style={styles.rowAddButton} onPress={() => setIsDialogOpen(true)}>
-                            <Text style={styles.rowAddButtonText}>+ 시간 추가</Text>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.label}>시험 시간표 설정</Text>
+                        {!isViewMode && (
+                            <TouchableOpacity
+                                style={styles.rowAddButton}
+                                onPress={() => {
+                                    Keyboard.dismiss();
+
+                                    setTimeout(() => {
+                                        setIsDialogOpen(true);
+                                    }, 150);
+                                }}
+                            >
+                                <Text style={styles.rowAddButtonText}>+ 시간 추가</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
+
+                <View style={styles.listWrapper}>
+                    <TimelineList
+                        mode={mode}
+                        data={timeline}
+                        setData={handleUpdateTimelineOrder}
+                        onRemove={handleRemoveTimelineRow}
+                    />
+                </View>
+
+                <View style={styles.buttonContainer}>
+                    {isCreateMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.saveActionButton]}
+                            onPress={handleSaveToView}
+                        >
+                            <Text style={styles.buttonText}>저장하기</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {isViewMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.startButton]}
+                            onPress={() => {
+                                if (currentId) {
+                                    navigation.navigate('Timer', { id: currentId });
+                                }
+                            }}
+                        >
+                            <Text style={styles.buttonText}>시작하기</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {isEditMode && (
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.saveActionButton]}
+                            onPress={handleSaveEditToView}
+                        >
+                            <Text style={styles.buttonText}>저장하기</Text>
                         </TouchableOpacity>
                     )}
                 </View>
-            </View>
-
-            <View style={styles.listWrapper}>
-                <TimelineList
-                    mode={mode}
-                    data={timeline}
-                    setData={handleUpdateTimelineOrder}
-                    onRemove={handleRemoveTimelineRow}
-                />
-            </View>
-
-            <View style={styles.buttonContainer}>
-                {isCreateMode && (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.saveActionButton]}
-                        onPress={handleSaveToView}
-                    >
-                        <Text style={styles.buttonText}>저장하기</Text>
-                    </TouchableOpacity>
-                )}
-
-                {isViewMode && (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.startButton]}
-                        onPress={() => {
-                            if (currentId) {
-                                navigation.navigate('Timer', { id: currentId });
-                            }
-                        }}
-                    >
-                        <Text style={styles.buttonText}>시작하기</Text>
-                    </TouchableOpacity>
-                )}
-
-                {isEditMode && (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.saveActionButton]}
-                        onPress={handleSaveEditToView}
-                    >
-                        <Text style={styles.buttonText}>저장하기</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+            </KeyboardAvoidingView>
 
             <TimerSettingDialog
                 isOpen={isDialogOpen}
@@ -160,7 +169,8 @@ export const SetTimerScreen = () => {
                 onClose={() => setIsDialogOpen(false)}
                 onSave={handleSaveTimelineItem}
             />
-        </KeyboardAvoidingView>
+        </View>
+
     );
 };
 

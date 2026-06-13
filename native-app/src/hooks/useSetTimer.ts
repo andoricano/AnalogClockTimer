@@ -17,6 +17,9 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
     const isViewMode = mode === 'view';
     const shouldAutoSave = isEditMode;
 
+    const log = (method: string, data?: any) => {
+    console.log(`[useSetTimer] ${method}`, data ?? '');
+};
     useEffect(() => {
         if (!isEditMode) return;
 
@@ -29,12 +32,12 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
     }, [navigation, isEditMode]);
 
     useEffect(() => {
-        if (isCreateMode || !id) return;
+        if (isCreateMode || !currentId) return;
 
         const loadTargetExam = async () => {
             try {
                 const list = await testStorage.getExamList();
-                const target = list.find(exam => String(exam.id) === String(id));
+                const target = list.find(exam => String(exam.id) === String(currentId));
 
                 if (target) {
                     setTitle(target.title);
@@ -46,7 +49,7 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
         };
 
         loadTargetExam();
-    }, [id, isCreateMode]);
+    }, [currentId, isCreateMode]);
 
     const saveToStorage = async (updatedTitle: string, updatedTimeline: TimelineItem[]) => {
         const finalTitle = updatedTitle.trim() === '' ? '새로운 타이머' : updatedTitle.trim();
@@ -61,7 +64,7 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
             };
             await testStorage.addExam(newExam);
             return { id: newId, title: finalTitle };
-        } else if (id) {
+        } else if (currentId) {
             const currentList = await testStorage.getExamList();
             const updatedList = currentList.map(exam =>
                 exam.id === currentId ? { ...exam, title: finalTitle, timeline: finalTimeline } : exam

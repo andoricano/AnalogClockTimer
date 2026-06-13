@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { testStorage, defaultExamData } from '../utils/storage/testStorage';
 import { ExamTimerItem } from '../components/schedule/TestScheduleItemRow';
 import { TestScheduleList } from '../components/schedule/TestScheduleList';
-import { useTimerContext } from '../context/TimerContext'; // 💡 훅 이름 매칭 확인
+import { useTimerContext } from '../context/TimerContext';
 
 interface HomeScreenProps {
     navigation: any;

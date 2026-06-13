@@ -57,6 +57,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 console.log("[AdMob] init failed:", e);
                 setIsAdReady(false);
             });
+            
     }, []);
 
     return (

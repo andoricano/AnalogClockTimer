@@ -6,10 +6,13 @@ import {
     Pressable,
     Keyboard,
     StyleSheet,
+    Modal,
     KeyboardAvoidingView,
     Platform,
+    TouchableWithoutFeedback,
+    ScrollView,
+    useWindowDimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { TimeBlockInput } from '../TimeBlockInput';
 import { formatToTimeString, minutesToTime, timeToMinutes } from '../../utils/timer';
 
@@ -36,6 +39,8 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     const [isDurationMode, setIsDurationMode] = useState(false);
     const [durationInput, setDurationInput] = useState('90');
 
+    const { height: windowHeight } = useWindowDimensions();
+
     useEffect(() => {
         if (isOpen) {
             setSubjectInput(initialSubject);
@@ -45,7 +50,6 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
     }, [isOpen]);
 
     const handleSave = () => {
-        // 적용하기 직전에 빈 칸을 '00' 포맷으로 채워 최종 수렴
         const finalStartTime = formatToTimeString(startInput);
         let finalEndTime = '';
 
@@ -57,106 +61,121 @@ export const TimerSettingDialog: React.FC<TimerSettingDialogProps> = ({
             finalEndTime = formatToTimeString(endInput);
         }
 
-
         onSave(subjectInput.trim() || '무제 과목', finalStartTime, finalEndTime);
-        console.log(finalStartTime, finalEndTime)
         onClose();
     };
 
     return (
         <Modal
-            isVisible={isOpen}
-            onBackdropPress={() => {
-                Keyboard.dismiss();
-                onClose();
-            }}
-            onBackButtonPress={onClose}
-            avoidKeyboard={false}
-            style={styles.modalCentered}
-            useNativeDriver={true}
-            hideModalContentWhileAnimating={true}
-            animationIn="fadeIn"
-            animationOut="fadeOut"
-            animationInTiming={100}
-            animationOutTiming={100}
-            backdropTransitionInTiming={100}
-            backdropTransitionOutTiming={100}
+            visible={isOpen}
+            transparent
+            animationType="fade"
+            statusBarTranslucent
+            onRequestClose={onClose}
         >
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={styles.keyboardAvoidingView}
-            >
-                <View style={styles.dialogBox}>
-                    <View style={styles.header}>
-                        <Text style={styles.title}>과목 시간 추가</Text>
-                        <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
-                            <Text style={styles.toggleLabel}>
-                                {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
-                            </Text>
-                        </Pressable>
-                    </View>
+            <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss(); onClose(); }}>
+                <View style={styles.modalOverlay}>
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>과목명</Text>
-                        <TextInput
-                            value={subjectInput}
-                            onChangeText={setSubjectInput}
-                            style={styles.input}
-                            placeholder="예: 국어"
-                        />
-                    </View>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        style={styles.keyboardAvoidingContainer}
+                        pointerEvents="box-none"
+                    >
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={[styles.dialogBox, { maxHeight: windowHeight * 0.8 }]}>
+                                <ScrollView
+                                    style={styles.scrollView}
+                                    contentContainerStyle={styles.scrollViewContent}
+                                    bounces={false}
+                                    showsVerticalScrollIndicator={false}
+                                    keyboardShouldPersistTaps="handled"
+                                >
+                                    <View style={styles.header}>
+                                        <Text style={styles.title}>과목 시간 추가</Text>
+                                        <Pressable onPress={() => setIsDurationMode((prev) => !prev)}>
+                                            <Text style={styles.toggleLabel}>
+                                                {isDurationMode ? '측정시간 설정 ON' : '측정시간 설정 OFF'}
+                                            </Text>
+                                        </Pressable>
+                                    </View>
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>시작 시간</Text>
-                        <TimeBlockInput value={startInput} onChange={setStartInput} />
-                    </View>
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>과목명</Text>
+                                        <TextInput
+                                            value={subjectInput}
+                                            onChangeText={setSubjectInput}
+                                            style={styles.input}
+                                            placeholder="예: 국어"
+                                        />
+                                    </View>
 
-                    {!isDurationMode ? (
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>종료 시간</Text>
-                            <TimeBlockInput value={endInput} onChange={setEndInput} />
-                        </View>
-                    ) : (
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>운영 시간 (분)</Text>
-                            <TextInput
-                                value={durationInput}
-                                onChangeText={(text) => setDurationInput(text.replace(/[^0-9]/g, ''))}
-                                keyboardType="numeric"
-                                style={styles.input}
-                                placeholder="90"
-                            />
-                        </View>
-                    )}
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>시작 시간</Text>
+                                        <TimeBlockInput value={startInput} onChange={setStartInput} />
+                                    </View>
 
-                    <View style={styles.buttonArea}>
-                        <Pressable style={styles.cancelButton} onPress={onClose}>
-                            <Text style={styles.cancelButtonText}>취소</Text>
-                        </Pressable>
-                        <Pressable style={styles.saveButton} onPress={handleSave}>
-                            <Text style={styles.saveButtonText}>적용</Text>
-                        </Pressable>
-                    </View>
+                                    {!isDurationMode ? (
+                                        <View style={styles.formGroup}>
+                                            <Text style={styles.label}>종료 시간</Text>
+                                            <TimeBlockInput value={endInput} onChange={setEndInput} />
+                                        </View>
+                                    ) : (
+                                        <View style={styles.formGroup}>
+                                            <Text style={styles.label}>운영 시간 (분)</Text>
+                                            <TextInput
+                                                value={durationInput}
+                                                onChangeText={(text) => setDurationInput(text.replace(/[^0-9]/g, ''))}
+                                                keyboardType="numeric"
+                                                style={styles.input}
+                                                placeholder="90"
+                                            />
+                                        </View>
+                                    )}
+
+                                    <View style={styles.buttonArea}>
+                                        <Pressable style={styles.cancelButton} onPress={onClose}>
+                                            <Text style={styles.cancelButtonText}>취소</Text>
+                                        </Pressable>
+                                        <Pressable style={styles.saveButton} onPress={handleSave}>
+                                            <Text style={styles.saveButtonText}>적용</Text>
+                                        </Pressable>
+                                    </View>
+                                </ScrollView>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </KeyboardAvoidingView>
                 </View>
-            </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    modalCentered: {
-        margin: 0,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
-    keyboardAvoidingView: {
+    keyboardAvoidingContainer: {
         flex: 1,
         width: '100%',
+        paddingHorizontal: 16,
+
+        justifyContent: 'flex-start',
+        paddingTop: 100,
+
         alignItems: 'center',
-        justifyContent: 'center',
     },
     dialogBox: {
-        width: '92%',
+        width: '100%',
         backgroundColor: '#fff',
         borderRadius: 14,
+        maxWidth: 500,
+    },
+
+    scrollView: {
+        width: '100%',
+    },
+    scrollViewContent: {
         padding: 20,
     },
     header: {
