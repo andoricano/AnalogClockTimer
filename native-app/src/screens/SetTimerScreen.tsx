@@ -211,9 +211,11 @@ export const SetTimerScreen = () => {
         if (shouldAutoSave) await saveToStorage(title, updatedTimeline);
     };
 
-    const handleUpdateTimelineOrder = (nextTimeline: TimelineItem[]) => {
-        console.log("=== 순서 정렬 완료 ===");
+    const handleUpdateTimelineOrder = async (nextTimeline: TimelineItem[]) => {
         setTimeline(nextTimeline);
+        if (shouldAutoSave) {
+            await saveToStorage(title, nextTimeline);
+        }
     };
 
     const handleRemoveTimelineRow = async (index: number) => {
