@@ -45,15 +45,24 @@ export const testStorage = {
     },
 };
 
-
-
-export const defaultExamData: ExamTimer = {
-    id: "default_csat",
-    title: "대학수학능력시험 (기본)",
-    timeline: [
-        { subject: "1교시 국어", startTime: "08:40", endTime: "10:00" },
-        { subject: "2교시 수학", startTime: "10:30", endTime: "12:10" },
-        { subject: "3교시 영어", startTime: "13:10", endTime: "14:20" },
-        { subject: "4교시 한국사", startTime: "14:50", endTime: "15:20" },
-    ]
-};
+export const examTemplateList: ExamTimer[] = [
+    {
+        id: "high_school_mock",
+        title: "고등학교 전국연합학력평가 (모의고사)",
+        timeline: [
+            { subject: "1교시 국어", startTime: "08:40", endTime: "10:00" },
+            { subject: "2교시 수학", startTime: "10:30", endTime: "12:10" },
+            { subject: "3교시 영어", startTime: "13:10", endTime: "14:20" },
+            { subject: "4교시 한국사", startTime: "14:50", endTime: "15:20" },
+            { subject: "4교시 탐구 (1과목)", startTime: "15:35", endTime: "16:05" },
+            { subject: "4교시 탐구 (2과목)", startTime: "16:07", endTime: "16:37" }
+        ]
+    },
+    {
+        id: "civil_service_9th",
+        title: "국가직/지방직 9급 공무원 필기시험",
+        timeline: [
+            { subject: "9급 필기시험 (5과목 일괄)", startTime: "10:00", endTime: "11:40" }
+        ]
+    }
+];

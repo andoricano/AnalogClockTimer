@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import mobileAds from 'react-native-google-mobile-ads';
 import { appStorage } from '../utils/storage/appStorage';
-import { defaultExamData, testStorage } from '../utils/storage/testStorage';
+import { examTemplateList, testStorage } from '../utils/storage/testStorage';
 
 interface TimerContextType {
     clockMode: boolean;
@@ -9,7 +9,7 @@ interface TimerContextType {
     isAdReady: boolean;
     isInitialized: boolean | null;
 }
-const adUnitId = process.env.EXPO_PUBLIC_BANNER_ID || "";
+
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -25,7 +25,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 if (isInit === null || isInit === true) {
                     setIsInitialized(false);
 
-                    await testStorage.setExamList([defaultExamData]);
+                    await testStorage.setExamList(examTemplateList);
                     await appStorage.setInitApp(false);
 
                     setIsInitialized(true);
@@ -38,7 +38,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
         };
 
-        // 초기화 검사 실행
         checkInit();
 
         console.log("[AdMob] init start");

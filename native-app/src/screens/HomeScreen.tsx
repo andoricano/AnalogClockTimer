@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { testStorage, defaultExamData } from '../utils/storage/testStorage';
+import { examTemplateList, testStorage } from '../utils/storage/testStorage';
 import { ExamTimerItem } from '../components/schedule/TestScheduleItemRow';
 import { TestScheduleList } from '../components/schedule/TestScheduleList';
 import { useTimerContext } from '../context/TimerContext';
@@ -22,19 +22,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         }
 
         if (isInitialized === false) {
-            setExamList([defaultExamData]);
+            setExamList(examTemplateList as ExamTimerItem[]);
             return;
         }
 
         const list = await testStorage.getExamList();
 
         if (!list || list.length === 0) {
-            setExamList([]); 
+            setExamList([]);
         } else {
             setExamList(list as ExamTimerItem[]);
         }
     };
-
 
     useEffect(() => {
         loadData();
@@ -82,7 +81,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {/* 시간표 목록 타이틀 및 편집 버튼 행 */}
             <View style={styles.titleRowContainer}>
                 <Text style={styles.titleText}>시간표 목록</Text>
                 <TouchableOpacity
