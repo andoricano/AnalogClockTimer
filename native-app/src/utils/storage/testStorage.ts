@@ -48,7 +48,7 @@ export const testStorage = {
 export const examTemplateList: ExamTimer[] = [
     {
         id: "high_school_mock",
-        title: "고등학교 전국연합학력평가 (모의고사)",
+        title: "고등학교 시험",
         timeline: [
             { subject: "1교시 국어", startTime: "08:40", endTime: "10:00" },
             { subject: "2교시 수학", startTime: "10:30", endTime: "12:10" },
@@ -60,7 +60,7 @@ export const examTemplateList: ExamTimer[] = [
     },
     {
         id: "civil_service_9th",
-        title: "국가직/지방직 9급 공무원 필기시험",
+        title: "공무원 시험",
         timeline: [
             { subject: "9급 필기시험 (5과목 일괄)", startTime: "10:00", endTime: "11:40" }
         ]
