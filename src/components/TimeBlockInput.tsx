@@ -57,7 +57,11 @@ export const TimeBlockInput: React.FC<TimeBlockInputProps> = ({
 
     // 2. 텍스트 직접 입력 로직 (값이 비면 부모에게는 0을 전달하되, 내 화면은 빈 칸 유지)
     const handleInputChange = (field: 'h' | 'm' | 's', text: string) => {
-        const sanitized = text.replace(/[^0-9]/g, '');
+        const numericText = text.replace(/[^0-9]/g, '');
+        const maximum = field === 'h' ? 23 : 59;
+        const sanitized = numericText === ''
+            ? ''
+            : String(Math.min(Number(numericText), maximum));
 
         // 부모에게 전달할 값 계산 (빈 값이면 '0'으로 치환)
         const parentValue = sanitized === '' ? '0' : sanitized;

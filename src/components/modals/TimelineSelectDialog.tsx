@@ -76,39 +76,38 @@ export const TimelineSelectDialog: React.FC<TimelineSelectDialogProps> = ({
 
     return (
         <View style={styles.overlay}>
-            <Pressable style={styles.pressableOverlay} onPress={onClose}>
-                <Pressable style={styles.dialogBox}>
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>시간 선택</Text>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#333" />
-                        </TouchableOpacity>
-                    </View>
+            <Pressable style={styles.pressableOverlay} onPress={onClose} />
+            <View style={styles.dialogBox}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>시간 선택</Text>
+                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                        <Ionicons name="close" size={24} color="#333" />
+                    </TouchableOpacity>
+                </View>
 
-                    <FlatList
-                        data={timeline}
-                        renderItem={renderItem}
-                        keyExtractor={(_, index) => index.toString()}
-                        contentContainerStyle={styles.listContainer}
-                        showsVerticalScrollIndicator={false}
-                    />
+                <FlatList
+                    data={timeline}
+                    renderItem={renderItem}
+                    keyExtractor={(_, index) => index.toString()}
+                    contentContainerStyle={styles.listContainer}
+                    showsVerticalScrollIndicator={false}
+                />
 
-                    <View style={styles.actionButtonGroup}>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.cancelButton]}
-                            onPress={onClose}
-                        >
-                            <Text style={styles.cancelButtonText}>취소</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.confirmButton]}
-                            onPress={handleConfirm}
-                        >
-                            <Text style={styles.confirmButtonText}>확인</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Pressable>
-            </Pressable>
+                <View style={styles.actionButtonGroup}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.cancelButton]}
+                        onPress={onClose}
+                    >
+                        <Text style={styles.cancelButtonText}>취소</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.confirmButton]}
+                        onPress={handleConfirm}
+                    >
+                        <Text style={styles.confirmButtonText}>확인</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 };
@@ -128,11 +127,11 @@ const styles = StyleSheet.create({
         zIndex: 9999,
     },
     pressableOverlay: {
-        flex: 1,
-        width: '100%',
-        height: '100%',
-        justifyContent: 'center',
-        alignItems: 'center',
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
     },
     dialogBox: {
         width: '85%',

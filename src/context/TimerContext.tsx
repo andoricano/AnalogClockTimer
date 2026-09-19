@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import mobileAds from 'react-native-google-mobile-ads';
+import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 import { appStorage } from '../utils/storage/appStorage';
 import { examTemplateList, testStorage } from '../utils/storage/testStorage';
 
@@ -40,17 +40,19 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         checkInit();
 
-        console.log("[AdMob] init start");
-        mobileAds()
-            .initialize()
-            .then((adapterStatuses) => {
-                console.log("[AdMob] init success:", adapterStatuses);
+        const initializeAds = async () => {
+            try {
+                await mobileAds().setRequestConfiguration({
+                    maxAdContentRating: MaxAdContentRating.G,
+                });
+                await mobileAds().initialize();
                 setIsAdReady(true);
-            })
-            .catch((e) => {
-                console.log("[AdMob] init failed:", e);
+            } catch {
                 setIsAdReady(false);
-            });
+            }
+        };
+
+        initializeAds();
 
     }, []);
 

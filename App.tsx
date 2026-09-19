@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationBar } from "expo-navigation-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
+import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 import { Ionicons } from "@expo/vector-icons";
 
 import { TimerProvider, useTimerContext } from "./src/context/TimerContext";
@@ -72,8 +72,7 @@ function MainLayout() {
             <Stack.Screen name="Clock" component={ClockScreen} options={{ title: "시계" }} />
           </Stack.Navigator>
         </NavigationContainer>
-
-        {isAdReady && !isTimerScreen && (
+        {isAdReady && adUnitId && !isTimerScreen && (
           <View style={styles.adContainer}>
             <BannerAd
               unitId={adUnitId}

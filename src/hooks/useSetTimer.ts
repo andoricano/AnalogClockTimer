@@ -17,9 +17,6 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
     const isViewMode = mode === 'view';
     const shouldAutoSave = isEditMode;
 
-    const log = (method: string, data?: any) => {
-    console.log(`[useSetTimer] ${method}`, data ?? '');
-};
     useEffect(() => {
         if (!isEditMode) return;
 
@@ -93,6 +90,11 @@ export const useSetTimer = (initialMode: TimerSetMode, id?: string) => {
     };
 
     const handleSaveEditToView = async () => {
+        if (!timeline || timeline.length === 0) {
+            Alert.alert("알림", "최소 하나의 일정을 추가해주세요.");
+            return;
+        }
+
         const targetId = await saveToStorage(title, timeline);
         if (targetId) {
             setMode('view');
