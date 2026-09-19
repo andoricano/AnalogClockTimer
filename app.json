@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "모의고사 타이머",
+    "slug": "mock-exam-timer",
+    "version": "2.0.2",
+    "orientation": "portrait",
+    "icon": "./assets/analog_clock_icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.andoricano.analogcolcktimer"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.andoricano.analogcolcktimer",
+      "versionCode": 2
+    },
+    "plugins": [
+      "expo-status-bar",
+      "expo-navigation-bar",
+      [
+        "react-native-google-mobile-ads",
+        {
+          // "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-9258608094809199~4157338637", // 1번 교체
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
+    ]
+  },
+  "react-native-google-mobile-ads": {
+    // "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+    "android_app_id": "ca-app-pub-9258608094809199~4157338637", // 2번 교체
+    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
+  }
+}
