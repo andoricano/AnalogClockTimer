@@ -1,541 +1,160 @@
 # Architecture
 
-## Overview
+## Scope and Evidence
 
-AnalogClockTimer is composed of two independent applications:
+This document describes the repository as inspected from its root. It is a single Expo and React Native project; no `native-app/` or `web-app/` directory exists.
 
-* `native-app/`: Expo + React Native application
-* `web-app/`: Vite + React web application
+Statements under **Confirmed implementation** are based on current source and configuration. **Recommendations and unknowns** are not established project policy.
 
-The native application is the primary implementation and contains the intended test-schedule timer structure. A known TypeScript issue currently prevents its normal build/type-check verification; see **Current Verification Notes**.
-
-The web application is a simplified standalone timer implementation.
-
-The two applications contain separate implementations of similar concepts. There is currently no shared source package between them.
-
----
-
-# Repository Structure
+## Repository Structure
 
 ```text
 AnalogClockTimer/
-├── README.md
-├── native-app/
-│   ├── App.tsx
-│   ├── index.ts
-│   ├── app.json
-│   └── src/
-│       ├── components/
-│       │   ├── schedule/
-│       │   ├── timeline/
-│       │   ├── modals/
-│       │   └── guide/
-│       ├── context/
-│       ├── hooks/
-│       ├── screens/
-│       ├── types/
-│       └── utils/
-│           └── storage/
-│
-└── web-app/
-    └── src/
-        ├── components/
-        ├── context/
-        ├── hooks/
-        ├── screens/
-        └── utils/
+├── App.tsx
+├── index.ts
+├── app.json
+├── package.json
+├── tsconfig.json
+├── assets/
+│   ├── analog_clock_icon.png
+│   └── icon.png
+└── src/
+    ├── components/
+    │   ├── guide/
+    │   ├── modals/
+    │   ├── schedule/
+    │   └── timeline/
+    ├── context/
+    ├── hooks/
+    ├── screens/
+    ├── types/
+    └── utils/
+        └── storage/
 ```
 
----
+## Confirmed Implementation
 
-# Native Application
+### Technology and Entry Points
 
-## Technology
+* Runtime: React Native 0.85 with Expo SDK 56.
+* Language: TypeScript with `strict: true`.
+* Entry point: `index.ts`, which registers `App` with Expo.
+* App shell: `App.tsx`, which wraps `MainLayout` in `TimerProvider` and `GestureHandlerRootView`.
+* `app.json` targets iOS and Android and sets portrait orientation.
 
-* React Native
-* Expo
-* TypeScript
-* React Navigation Native Stack
-* React Context API
-* React hooks
-* AsyncStorage
-* `react-native-google-mobile-ads`
-* `react-native-draggable-flatlist`
+Dependencies include React Navigation Native Stack, AsyncStorage, Google Mobile Ads, and a draggable flat-list implementation.
 
-The native application is configured for portrait orientation and supports iOS and Android through Expo configuration.
+### Navigation
 
----
-
-## Native Navigation
-
-The native application uses React Navigation Native Stack.
+`App.tsx` declares one React Navigation Native Stack. All routes are siblings:
 
 ```text
-Home
-├── Setting
-├── SetTimer
-├── Timer
-└── Clock
+Home        initial route; stored schedule list
+Setting     application settings and stored-schedule reset
+SetTimer    create, edit, or view a schedule
+Timer       run a selected schedule
+Clock       current-time analog clock
 ```
 
-All five routes are sibling screens registered in the same Native Stack in `native-app/App.tsx`. `SetTimer` moves to `Timer` by calling `navigation.navigate('Timer', { id: currentId })`; `Timer` is not nested under `SetTimer`.
+`RootStackParamList` in `src/types/navigation.ts` defines route parameters. `SetTimer` reaches `Timer` with `navigation.navigate('Timer', { id: currentId })`; there is no nested `Timer` route below `SetTimer`.
 
-### Home
+### State Management
 
-The initial screen.
+The code uses React state, effects, and Context rather than an external state-management library.
 
-Displays the stored test schedule list.
+`TimerProvider` in `src/context/TimerContext.tsx` supplies `isInitialized`, `isAdReady`, and `clockMode`/`setClockMode`.
 
-### Setting
+`useTimer` in `src/hooks/useTimer.ts` separately owns `timerStatus` (`READY`, `RUNNING`, `PAUSED`, `FINISHED`), timeline state, current subject, start/end/rendering time, and another local `clockMode`/setter.
 
-Provides application settings, including deletion of all stored test timers.
+The Context `clockMode` and `useTimer` `clockMode` are separate values. `TimerScreen` consumes the hook-local value; no synchronization was found.
 
-### SetTimer
+`useSetTimer` in `src/hooks/useSetTimer.ts` owns editor mode, title, timeline, and target ID, and coordinates persistence for create/edit/delete/reorder actions.
 
-Used to create, edit, and view a test schedule.
-
-The screen receives:
-
-* `mode`
-* optional `id`
-
-The supported modes are represented by the existing navigation/type definitions.
-
-### Timer
-
-Contains the UI and implementation intent to execute a selected test schedule. This behavior is not currently build-verified because of the known TypeScript issue described in **Current Verification Notes**.
-
-It receives an optional schedule ID.
-
-### Clock
-
-Displays the current time as a full-screen-style analog clock.
-
----
-
-# Native State Management
-
-The native application uses React state, effects, and Context API rather than an external global state library.
-
-## Global Context
-
-The native context currently contains:
-
-* `clockMode`
-* advertisement readiness (`isAdReady`)
-* initial storage readiness (`isInitialized`)
-
-The application also has timer-specific state contained inside hooks.
-
-## Timer State
-
-`native-app/src/hooks/useTimer.ts` manages timer execution state including:
-
-* `timerStatus`
-* current schedule
-* current schedule item index
-* subject name
-* start time
-* end time
-* rendering/current time
-
-Timer states include:
+### Data Flow
 
 ```text
-READY
-RUNNING
-PAUSED
-FINISHED
+App startup
+  → TimerProvider
+  → read init_app from AsyncStorage
+  → first launch: save examTemplateList to TEST_LIST
+  → HomeScreen reads TEST_LIST and displays it
+  → SetTimerScreen / useSetTimer creates, edits, deletes, or orders schedules
+  → testStorage writes the complete TEST_LIST
+  → SetTimerScreen navigates to Timer with the selected ID
+  → TimerScreen loads the schedule
+  → useTimer advances rendering time each second
+  → next timeline item or FINISHED
 ```
 
-## Schedule Editing State
+An end time earlier than its start time is handled as a next-day time by adding 24 hours.
 
-`native-app/src/hooks/useSetTimer.ts` manages:
+### Local Storage
 
-* create mode
-* edit mode
-* view mode
-* schedule title
-* schedule contents
-* target schedule ID
-* schedule creation
-* schedule modification
-* schedule deletion
-* schedule reordering
-* automatic persistence
+`src/utils/storage/storage.ts` wraps AsyncStorage. Domain modules use it:
 
----
+| Module | Keys / role |
+| --- | --- |
+| `appStorage.ts` | `init_app`, first-launch flag |
+| `testStorage.ts` | `TEST_LIST`, stored `ExamTimer` array and default templates |
+| `timeStorage.ts` | timer time/minute/start/end keys; not found in the active render/import path |
 
-# Native Data Flow
+Screens and UI components do not directly import AsyncStorage.
 
-The primary native data flow is:
+### Business Logic and Components
 
-```text
-Application startup
-      ↓
-TimerProvider
-      ↓
-Check AsyncStorage initialization
-      ↓
-First launch?
-      ├── Yes → Save examTemplateList to TEST_LIST
-      └── No
-      ↓
-HomeScreen
-      ↓
-Read TEST_LIST
-      ↓
-Display schedule list
-      ↓
-SetTimerScreen / useSetTimer
-      ↓
-Create / edit / delete / reorder
-      ↓
-Persist complete schedule array to TEST_LIST
-      ↓
-TimerScreen
-      ↓
-Load schedule by ID
-      ↓
-useTimer
-      ↓
-Run the implementation that advances schedule items every second
-      ↓
-Next item or FINISHED
-```
+* `src/hooks/useTimer.ts`: timer progression, status transitions, current-item switching, time-range validation.
+* `src/hooks/useSetTimer.ts`: schedule editor mode and storage-backed CRUD/order actions.
+* `src/utils/timer.ts`: time conversion, formatting, and total-duration calculation.
+* `src/components/schedule/`: saved schedule list and timer controls.
+* `src/components/timeline/`: editable/reorderable timeline rows.
+* `src/components/modals/`: timeline selection and time-entry dialogs.
+* `src/components/AnalogClock.tsx`: clock-face rendering.
 
----
+`GuideOverlay`, `TimerGuidComponents`, `timeStorage`, and `components/TimerSetting` exist but were not found in the active render/import path. Their presence alone does not establish that they should be removed.
 
-# Native Persistent Storage
+### External Integrations
 
-Native persistent data is stored using AsyncStorage.
+No application backend, HTTP API, authentication, or server data layer was found.
 
-The storage implementation is located under:
+The app uses AsyncStorage for local persistence and `react-native-google-mobile-ads` for startup initialization and conditional banner display outside the `Timer` screen.
 
-```text
-native-app/src/utils/storage/
-```
+## Current Verification Baseline
 
-The application uses a storage abstraction rather than having screens directly manage AsyncStorage.
-
-## Initial Templates
-
-The first-launch templates are defined in code.
-
-Current templates include:
-
-* `고등학교 시험`
-* `공무원 시험`
-
-These are stored as the initial `TEST_LIST` data when required.
-
----
-
-# Timer Model
-
-Schedule times are represented as strings.
-
-Supported representations include:
-
-```text
-HH:mm
-HH:mm:ss
-```
-
-The timer engine converts these values into seconds for timer calculations.
-
-When an end time is earlier than its start time, the implementation treats the end time as belonging to the following day by adding 24 hours.
-
-The timer implementation is written to progress on a one-second basis. Normal native build execution is currently unverified because of the known TypeScript issue.
-
-When the current schedule item finishes:
-
-```text
-Current item
-    ↓
-Next schedule item
-    ↓
-...
-    ↓
-FINISHED
-```
-
----
-
-# Native Component Structure
-
-## Schedule
-
-The main schedule UI follows:
-
-```text
-HomeScreen
-└── TestScheduleList
-    └── TestScheduleItemRow
-```
-
-The schedule list represents stored test timers.
-
-## Timeline
-
-The schedule editing UI follows:
-
-```text
-SetTimerScreen
-└── TimelineList
-    └── TimelineItemRow
-```
-
-`react-native-draggable-flatlist` is used for schedule item reordering.
-
-## Timer Settings
-
-```text
-SetTimerScreen
-└── TimerSettingDialog
-    └── TimeBlockInput
-```
-
-## Timer Screen
-
-```text
-TimerScreen
-├── AnalogClock
-├── ScheduleController
-└── TimelineSelectDialog
-```
-
-## Clock Screen
-
-```text
-ClockScreen
-└── AnalogClock
-```
-
----
-
-# Native Business Logic
-
-Business logic is primarily separated from rendering.
-
-| Responsibility                        | Location                              |
-| ------------------------------------- | ------------------------------------- |
-| Timer execution                       | `native-app/src/hooks/useTimer.ts`    |
-| Schedule creation/edit/delete/reorder | `native-app/src/hooks/useSetTimer.ts` |
-| Persistent storage                    | `native-app/src/utils/storage/`       |
-| Time parsing/formatting/calculation   | `native-app/src/utils/timer.ts`       |
-| Navigation types                      | `native-app/src/types/navigation.ts`  |
-
-Screens and components primarily handle rendering and user interaction.
-
----
-
-# Native External Integrations
-
-There is no application backend or external HTTP API currently implemented.
-
-The native application uses the following external integrations.
-
-## AsyncStorage
-
-Used for local persistent storage.
-
-```text
-@react-native-async-storage/async-storage
-```
-
-## Google Mobile Ads
-
-Used for banner advertising.
-
-```text
-react-native-google-mobile-ads
-```
-
-The application:
-
-* initializes the advertising SDK at startup
-* reads the banner ad unit ID from `EXPO_PUBLIC_BANNER_ID`
-* tracks advertisement readiness
-* displays the banner outside the Timer screen according to the current UI logic
-
-Expo configuration also contains Android production advertisement application configuration and an iOS test advertisement application ID.
-
----
-
-# Web Application
-
-## Technology
-
-* React
-* Vite
-* TypeScript
-* React Context API
-* React hooks
-
-The web application is intentionally simpler than the native application.
-
----
-
-# Web Navigation
-
-There is no router or multi-screen navigation.
-
-The structure is:
-
-```text
-App
-└── TimerScreen
-```
-
----
-
-# Web State Management
-
-The web application uses React state, effects, hooks, and Context API.
-
-The global context currently stores:
-
-```text
-clockMode
-```
-
-Timer state is maintained by:
-
-```text
-web-app/src/hooks/useTimer.ts
-```
-
-The timer manages:
-
-* start time
-* end time
-* running state
-* rendering/current time
-
----
-
-# Web Data Flow
-
-The web application does not persist schedules.
-
-Its primary flow is:
-
-```text
-TimerScreen
-      ↓
-TimerSetting / TimerSettingDialog
-      ↓
-User enters time range
-      ↓
-useTimer.setTimeRange
-      ↓
-Timer state
-      ↓
-TimerScreen
-```
-
-There is no AsyncStorage or server persistence in the current web implementation.
-
----
-
-# Web Component Structure
-
-```text
-TimerScreen
-├── Header
-├── AnalogClock
-├── TimerSetting
-└── TimerSettingDialog
-    └── TimeBlockInput
-```
-
----
-
-# Native vs Web
-
-| Area                 | Native                                | Web                      |
-| -------------------- | ------------------------------------- | ------------------------ |
-| Runtime              | React Native + Expo                   | React + Vite             |
-| Navigation           | React Navigation Stack                | None                     |
-| Screens              | Multiple                              | Single                   |
-| Test schedules       | Yes                                   | No                       |
-| Schedule CRUD        | Yes                                   | No                       |
-| Schedule persistence | AsyncStorage                          | None                     |
-| Timer                | Intended schedule-based structure; not build-verified | Single timer             |
-| Advertising          | Google Mobile Ads                     | None                     |
-| UI styling           | React Native StyleSheet               | Inline/local web styling |
-| Timer state          | `READY / RUNNING / PAUSED / FINISHED` | Running boolean          |
-| Storage              | Local                                 | None                     |
-
----
-
-# Unused or Disconnected Files
-
-The following files exist in the repository but were not found in the current application render/import path during the architecture inspection:
-
-* `native-app/src/components/guide/GuideOverlay.tsx`
-* `native-app/src/components/guide/TimerGuidComponents.tsx`
-* `native-app/src/utils/storage/timeStorage.ts`
-* `native-app/src/components/TimerSetting.tsx`
-
-Their presence does not by itself indicate that they should be removed.
-
----
-
-# Development and Verification
-
-## Web
-
-Available project commands include:
+### Commands Run
 
 ```bash
-npm run dev
-npm run build
+npx tsc --noEmit
+npx expo export --platform android --output-dir /private/tmp/analog-clock-timer-native-baseline-after-default-fix
+npx expo config --type public
+npm ci --dry-run
 npm run lint
+npm run start -- --offline
+adb devices
 ```
 
-The web build uses:
+### Results
 
-```text
-tsc -b && vite build
-```
+| Check | Result | Evidence |
+| --- | --- | --- |
+| TypeScript | Succeeded | `npx tsc --noEmit` completed after removal of the stale `defaultExamData` reference |
+| Android Expo export | Succeeded | Metro bundled `index.ts` and produced an Android JavaScript bundle |
+| Dependency lock consistency | Succeeded | `npm ci --dry-run` reported up to date |
+| Lint | Unavailable | No `lint` script or ESLint configuration found |
+| Automated tests | Unavailable | No test framework or test files found |
+| Development server | Partially checked | Expo started project initialization offline; UI was not inspected |
+| Device/emulator run | Not verified | `adb` daemon could not start in this environment because listener creation was not permitted |
 
-## Native
+Both TypeScript verification and Android JavaScript export currently succeed. Neither result verifies actual device or emulator UI behavior.
 
-Available commands include:
+### Confirmed Existing Errors and Warnings
 
-```bash
-npm run start
-npm run android
-npm run ios
-npm run web
-```
+1. The previous `defaultExamData` import and `default_csat` branch in `TimerScreen` were removed because the legacy export no longer exists and no current route supplies that ID. TypeScript verification now passes.
+2. Expo reports that the root-level `react-native-google-mobile-ads` key in `app.json` is an ignored extra configuration key. The plugin configuration nested under `expo.plugins` was still parsed.
 
-No test framework, test files, or CI configuration were identified during the architecture inspection.
+Actual device UI behavior has not been verified.
 
----
+## Recommendations and Unknowns
 
-# Current Verification Notes
+No CI, test, lint, formatter, commit, or pull-request policy was found. These should not be assumed.
 
-The architecture inspection identified the following existing verification issues.
-
-## Native TypeScript Issue
-
-`native-app/src/screens/TimerScreen.tsx` imports `defaultExamData` from `testStorage`, but the corresponding `testStorage.ts` does not currently export `defaultExamData`.
-
-This is an existing codebase issue identified during inspection.
-
-## Web Dependency Issue
-
-The web build could not be executed successfully in the inspection environment because:
-
-```text
-tsc: command not found
-```
-
-The `web-app/node_modules` dependencies were not installed in that environment.
-
-Therefore, web build success was not verified.
-
-These findings describe the state observed during the architecture inspection and should not be interpreted as architectural requirements.
+Continue to run TypeScript verification and the relevant Expo build or device workflow when adding functionality. This is a development recommendation, not an existing automated policy.

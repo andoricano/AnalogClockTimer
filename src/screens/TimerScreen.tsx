@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useTimer } from '../hooks/useTimer';
 import { AnalogClock } from '../components/AnalogClock';
-import { testStorage, defaultExamData } from '../utils/storage/testStorage';
+import { testStorage } from '../utils/storage/testStorage';
 import { ScheduleController } from '../components/schedule/ScheduleController';
 import { TimelineSelectDialog } from '../components/modals/TimelineSelectDialog';
 
@@ -82,13 +82,8 @@ export const TimerScreen = () => {
         const loadActiveSchedule = async () => {
             if (!id) return;
 
-            let targetExam = null;
-            if (id === 'default_csat') {
-                targetExam = defaultExamData;
-            } else {
-                const list = await testStorage.getExamList();
-                targetExam = list.find(exam => exam.id === id);
-            }
+            const list = await testStorage.getExamList();
+            const targetExam = list.find(exam => exam.id === id);
 
             if (targetExam && targetExam.timeline.length > 0) {
                 initScheduleTimeline(targetExam.timeline);

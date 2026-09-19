@@ -1,339 +1,95 @@
 # AGENTS.md
 
-## Project Overview
+## Project Scope
 
-AnalogClockTimer is a timer application with two separate clients:
-
-* `native-app/`: Expo + React Native application
-* `web-app/`: Vite + React web application
-
-The native application is the primary implementation and contains the intended test-schedule timer structure. Its current TypeScript/build verification has a known unresolved issue; see **Verification Status** below. The web application is a simplified standalone timer implementation.
-
-Treat the two applications as separate implementations unless a task explicitly requires changes to both.
-
----
-
-## Core Development Principles
-
-### 1. Preserve the existing architecture
-
-Prefer extending the existing architecture over introducing a new architectural pattern.
-
-Do not:
-
-* Replace the existing state-management approach without an explicit requirement.
-* Move business logic into UI components unnecessarily.
-* Merge the native and web implementations.
-* Introduce a new framework or library when the existing implementation can support the requirement.
-* Perform unrelated refactoring during a feature change.
-
-Keep changes focused on the requested task.
-
-### 2. Verify the existing implementation before changing it
-
-Before modifying code:
-
-* Inspect the relevant existing files.
-* Trace the existing data flow.
-* Identify the existing hook, context, storage module, or utility responsible for the behavior.
-* Reuse existing abstractions when appropriate.
-
-Do not infer an architecture that is not supported by the existing code.
-
-If the implementation differs from the documentation, treat the actual code as the current source of truth.
-
-### 3. Keep UI and business logic separated
-
-Components and screens should primarily handle:
-
-* Rendering
-* User interaction
-* Passing events to hooks or other application logic
-
-Business logic should remain in the appropriate:
-
-* hooks
-* context
-* storage modules
-* utility modules
-
-For the native application in particular:
-
-* Timer execution logic belongs in `src/hooks/useTimer.ts`.
-* Timer schedule creation/edit/delete logic belongs in `src/hooks/useSetTimer.ts`.
-* Persistent schedule data belongs behind the storage layer.
-* Time parsing and calculation belongs in `src/utils/timer.ts`.
-
-Do not move this logic into screens or presentational components without a clear reason.
-
-### 4. Preserve the native and web separation
-
-`native-app` and `web-app` currently have separate implementations of similar concepts.
-
-Do not automatically create shared packages or shared source files merely because both applications contain similar functionality.
-
-If a change is required in both applications, evaluate each implementation independently and preserve their platform-specific behavior.
-
-### 5. Respect the existing storage abstraction
-
-Native user data is persisted through the storage layer.
-
-Use the existing storage modules instead of accessing AsyncStorage directly from screens or components.
-
-Do not bypass the existing storage abstraction unless the task explicitly requires changing that abstraction.
-
-### 6. Do not introduce dependencies unnecessarily
-
-Before adding a dependency:
-
-1. Check whether the existing project already provides the required functionality.
-2. Check whether the functionality can reasonably be implemented using existing code.
-3. Add a dependency only when it provides a meaningful benefit for the requested task.
-
-Do not add libraries simply to replace existing implementations.
-
-### 7. Preserve existing behavior
-
-When implementing a new feature:
-
-* Do not change unrelated timer behavior.
-* Do not change existing navigation behavior without a requirement.
-* Do not change storage formats without considering existing persisted data.
-* Do not remove existing functionality merely because it appears unused.
-* Do not delete files only because they are not currently imported.
-
-Existing unused or disconnected files may be intentionally retained for future use.
-
-### 8. Distinguish existing issues from newly introduced issues
-
-The repository may contain pre-existing TypeScript or build issues.
-
-When verifying a change:
-
-* Identify errors that existed before the change.
-* Do not automatically attribute existing errors to the current modification.
-* Do not fix unrelated pre-existing problems unless explicitly requested.
-* If a verification command cannot run because dependencies or tooling are unavailable, report that fact rather than claiming verification succeeded.
-
-### 9. Avoid speculative changes
-
-Do not invent:
-
-* APIs
-* backend services
-* authentication
-* networking layers
-* state-management systems
-* architectural conventions
-* platform behavior
-
-unless they are required by the task or verified in the existing project.
-
-If an implementation detail is unknown, inspect the repository before deciding.
-
----
-
-## Project Structure
-
-### Native
+AnalogClockTimer is a single Expo and React Native application rooted at this repository.
 
 ```text
-native-app/
-├── App.tsx
-├── index.ts
-└── src/
-    ├── components/
-    │   ├── schedule/
-    │   ├── timeline/
-    │   ├── modals/
-    │   └── guide/
-    ├── context/
-    ├── hooks/
-    ├── screens/
-    ├── types/
-    └── utils/
-        └── storage/
+App.tsx
+index.ts
+app.json
+assets/
+src/
 ```
 
-### Web
+There is no `native-app/` subproject and no web application. Treat repository-root paths as canonical.
 
-```text
-web-app/
-└── src/
-    ├── components/
-    ├── context/
-    ├── hooks/
-    ├── screens/
-    └── utils/
-```
+## Confirmed Architecture
 
-Refer to `ARCHITECTURE.md` for the current architecture and data flow.
+The application uses React Native, Expo, TypeScript, React Navigation Native Stack, React Context, React hooks, AsyncStorage, `react-native-google-mobile-ads`, and `react-native-draggable-flatlist`.
 
----
-
-## Native Application Rules
-
-The native application uses:
-
-* React Native
-* Expo
-* TypeScript
-* React Navigation Native Stack
-* React Context
-* React hooks
-* AsyncStorage
-* `react-native-google-mobile-ads`
-* `react-native-draggable-flatlist`
-
-The native application contains implementations for:
-
-* Test schedule creation
-* Test schedule editing
-* Test schedule deletion
-* Test schedule reordering
-* Persistent schedule storage
-* Schedule-based timer execution structure (currently unverified because of the known TypeScript issue)
-* Analog clock display
-* Current-time clock display
-* Banner advertising
-
-Maintain these behaviors unless the task explicitly changes them.
+* `index.ts` registers `App` through Expo.
+* `App.tsx` provides `TimerProvider`, initializes the navigation container, and renders the banner-ad shell.
+* The Expo configuration targets iOS and Android and sets portrait orientation.
 
 ### Navigation
 
-The native navigation currently follows:
+The following routes are sibling screens in one Native Stack defined in `App.tsx`:
 
 ```text
 Home
-├── Setting
-├── SetTimer
-├── Timer
-└── Clock
+Setting
+SetTimer
+Timer
+Clock
 ```
 
-All five routes are sibling screens registered in the same Native Stack in `native-app/App.tsx`. `SetTimer` starts a selected schedule by calling `navigation.navigate('Timer', { id: currentId })`; `Timer` is not a nested child route of `SetTimer`.
+`SetTimer` starts a selected schedule with `navigation.navigate('Timer', { id })`. `Timer` is not a child navigator of `SetTimer`. Route types are in `src/types/navigation.ts`.
 
-Navigation types are defined in:
+### Responsibilities
 
-```text
-native-app/src/types/navigation.ts
-```
+Keep existing responsibilities in their current layers.
 
-Use the existing navigation types and route structure.
+| Responsibility | Location |
+| --- | --- |
+| Timer execution and schedule progression | `src/hooks/useTimer.ts` |
+| Schedule creation, editing, deletion, ordering, and persistence coordination | `src/hooks/useSetTimer.ts` |
+| Application initialization and advertisement readiness | `src/context/TimerContext.tsx` |
+| AsyncStorage wrapper and domain storage modules | `src/utils/storage/` |
+| Time parsing, formatting, and duration calculations | `src/utils/timer.ts` |
+| Rendering and user interaction | `src/screens/` and `src/components/` |
 
-### Timer
-
-The main native timer engine is:
-
-```text
-native-app/src/hooks/useTimer.ts
-```
-
-It manages timer execution and schedule progression.
-
-The schedule-based timer structure is an implementation intent, not a currently build-verified capability. `TimerScreen.tsx` imports `defaultExamData`, but `testStorage.ts` does not export it. Native TypeScript verification therefore currently fails.
-
-Do not duplicate timer progression logic in screens or components.
-
-### Schedule Editing
-
-Schedule creation/editing logic is primarily handled by:
-
-```text
-native-app/src/hooks/useSetTimer.ts
-```
-
-Keep schedule mutation logic there unless the architecture is intentionally changed.
+Do not move timer, schedule, storage, or time-calculation logic into screens or presentational components without an explicit architectural change.
 
 ### Storage
 
-Native persistent schedule data is stored through:
+Persistent data is accessed through:
 
 ```text
-native-app/src/utils/storage/
+src/utils/storage/storage.ts
+src/utils/storage/appStorage.ts
+src/utils/storage/testStorage.ts
 ```
 
-The storage layer owns AsyncStorage interaction.
+Screens and components must not access `AsyncStorage` directly. Reuse or extend this storage layer instead.
 
-### Time Handling
+## Development Rules
 
-Time parsing, formatting, and duration calculations are handled by:
+These maintenance rules are derived from the current code structure.
 
-```text
-native-app/src/utils/timer.ts
-```
+1. Preserve the single-project Expo/React Native structure. Do not introduce a web client, shared package, or state-management library unless explicitly requested.
+2. Keep changes focused. Do not perform unrelated refactors, dependency upgrades, or storage-format changes as part of another task.
+3. Preserve current time handling: `HH:mm` and `HH:mm:ss` values, second-based timer updates, and schedules crossing midnight.
+4. Preserve the Native Stack route model and use `RootStackParamList` for route changes.
+5. Use TypeScript; components use `PascalCase`, hooks use `useXxx`, and utilities use feature-oriented names.
+6. Use `StyleSheet.create` for React Native styling unless an existing component requires an established alternative.
+7. Do not remove a file solely because it is currently disconnected from the render path.
 
-Maintain the existing handling of:
+## Current Verification Baseline
 
-* `HH:mm`
-* `HH:mm:ss`
-* second-based timer calculations
-* schedules crossing midnight
+The following facts are confirmed:
 
----
+* `npx tsc --noEmit` passes. The previous `defaultExamData` import error in `src/screens/TimerScreen.tsx` has been resolved.
+* `npx expo export --platform android` succeeds and creates an Android JavaScript bundle.
+* `npm run lint` is unavailable because there is no `lint` script and no ESLint configuration was found.
+* No test framework, test files, or CI configuration were found.
+* Actual UI behavior on an emulator or device has not been verified.
 
-## Web Application Rules
+The TypeScript baseline currently passes. Continue to run the type check for changes that affect TypeScript code; Android export success does not verify device UI behavior.
 
-The web application is a separate simplified implementation.
+## Verification Guidance
 
-It currently provides:
-
-* A single timer
-* Current-time mode
-* Timer setting dialog
-* Analog clock
-
-It does not currently provide:
-
-* Persistent storage
-* Test schedules
-* Schedule editing
-* Native navigation
-* Advertising
-
-Do not add native-specific behavior to the web application unless explicitly requested.
-
-The main web timer logic is:
-
-```text
-web-app/src/hooks/useTimer.ts
-```
-
----
-
-## Code Style
-
-Use TypeScript for application code.
-
-Follow the existing naming conventions:
-
-* Components: `PascalCase`
-* Hooks: `useXxx`
-* Utility modules: feature-oriented names
-* React Native styles: `StyleSheet.create`
-* Web styles: follow the existing local styling approach
-
-Do not introduce a new styling convention without a specific reason.
-
----
-
-## Verification
-
-### Verification Status
-
-The native application has a confirmed pre-existing TypeScript issue: `native-app/src/screens/TimerScreen.tsx` imports `defaultExamData` from `testStorage`, but that module does not export it. As a result, native TypeScript verification and a normal native build are currently unverified. Do not describe schedule-based timer execution as confirmed working until this issue is resolved and verification succeeds.
-
-Use the project's existing commands when applicable.
-
-### Web
-
-```bash
-npm run dev
-npm run build
-npm run lint
-```
-
-### Native
+Available scripts are:
 
 ```bash
 npm run start
@@ -342,21 +98,22 @@ npm run ios
 npm run web
 ```
 
-Do not claim a command passed unless it was actually executed successfully.
+Use the relevant available command and report its actual result. Do not claim that a build, test, lint, or device run passed unless it executed successfully.
 
-If dependencies are missing or a command cannot execute, report the exact limitation.
+## Recommendations, Not Confirmed Policy
 
----
+No CI, test, lint, formatting, commit, or pull-request policy was found in the repository. Any future recommendation in these areas is a proposal, not an existing project rule.
 
-## Change Scope
 
-For each task:
+## Git Rules
 
-1. Understand the existing implementation.
-2. Identify the smallest appropriate change.
-3. Implement the requested behavior.
-4. Preserve unrelated behavior.
-5. Run the relevant available verification.
-6. Report any pre-existing or unrelated errors separately.
-
-Do not perform broad cleanup, refactoring, dependency upgrades, or architectural changes unless explicitly requested.
+- Do not create Git commits unless explicitly requested by the user.
+- Do not run `git reset --hard`, `git clean`, or other destructive Git commands.
+- Do not discard or overwrite user changes.
+- Before making changes, inspect the current working tree when relevant.
+- After making changes, report:
+  - changed files
+  - relevant `git diff` summary
+  - verification results
+- Keep each change focused on the requested task.
+- Do not modify unrelated files.
